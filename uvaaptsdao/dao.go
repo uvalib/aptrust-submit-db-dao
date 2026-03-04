@@ -8,22 +8,22 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/rs/xid"
-	"log"
+	//"log"
 
 	// postgres
 	_ "github.com/lib/pq"
 )
 
 type Dao struct {
-	log     *log.Logger // logger
-	*sql.DB             // database connection
+	//log     *log.Logger // logger
+	*sql.DB // database connection
 }
 
-func newDao(cfg *Config) (*Dao, error) {
+func NewDao(host string, port int, user string, password string, dbname string) (*Dao, error) {
 
 	// connection attributes
 	connectionStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
-		cfg.DbHost, cfg.DbPort, cfg.DbUser, cfg.DbPassword, cfg.DbName)
+		host, port, user, password, dbname)
 
 	// connect and ensure success
 	db, err := sql.Open("postgres", connectionStr)
@@ -135,16 +135,16 @@ func (dao *Dao) CreateNewSubmission(client string) (*Submission, error) {
 	}
 
 	// insert into submissions_status
-	stmt2, err := dao.Prepare("INSERT INTO submission_status( submission, status ) VALUES( $1,$2 )")
-	if err != nil {
-		return nil, err
-	}
-	defer stmt2.Close()
+	//stmt2, err := dao.Prepare("INSERT INTO submission_status( submission, status ) VALUES( $1,$2 )")
+	//if err != nil {
+	//	return nil, err
+	//}
+	//defer stmt2.Close()
 
-	err = execPrepared(stmt2, newIdentifier, SubmissionStatusRegistered)
-	if err != nil {
-		return nil, err
-	}
+	//err = execPrepared(stmt2, newIdentifier, SubmissionStatusRegistered)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	// get the submission details
 	s, err := dao.GetSubmissionByIdentifier(newIdentifier)

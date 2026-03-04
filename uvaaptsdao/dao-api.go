@@ -4,7 +4,15 @@
 
 package uvaaptsdao
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
+
+// error definitions
+var ErrClientNotFound = fmt.Errorf("client not found")
+var ErrSubmissionNotFound = fmt.Errorf("submission not found")
+var ErrBagNotFound = fmt.Errorf("bag not found")
 
 type Client struct {
 	Name       string    `json:"name"`       // client name
