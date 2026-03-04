@@ -23,26 +23,26 @@ type Client struct {
 type Submission struct {
 	Identifier string    `json:"identifier"` // submission identifier
 	Client     string    `json:"client"`     // owning client
+	Status     string    `json:"status"`     // current status
 	Created    time.Time `json:"created"`    // created time
+	Updated    time.Time `json:"updated"`    // updated time
 }
 
 type Bag struct {
 	Name       string    `json:"name"`       // bag name
-	Identifier string    `json:"identifier"` // bag identifier
 	Submission string    `json:"submission"` // owning submission
+	Status     string    `json:"status"`     // current status
+	ETag       string    `json:"etag"`       // current status
 	Created    time.Time `json:"created"`    // created time
+	Updated    time.Time `json:"updated"`    // updated time
 }
 
-type SubmissionStatus struct {
-	Identifier string    `json:"identifier"` // submission identifier
-	Status     string    `json:"status"`     // current status
-	Updated    time.Time `json:"updated"`    // created time
-}
-
-type BagStatus struct {
-	Identifier string    `json:"identifier"` // submission identifier
-	Status     string    `json:"status"`     // current status
-	Updated    time.Time `json:"updated"`    // created time
+type File struct {
+	Name       string    `json:"name"`       // file name
+	Submission string    `json:"submission"` // owning submission
+	BagName    string    `json:"bag"`        // owning bag name
+	Hash       string    `json:"hash"`       // file hash
+	Created    time.Time `json:"created"`    // created time
 }
 
 //

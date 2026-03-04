@@ -50,27 +50,10 @@ func (dao *Dao) Check() error {
 	return dao.Ping()
 }
 
-// GetSubmissionStatusByIdentifier -- get the status of the specified submission
-func (dao *Dao) GetSubmissionStatusByIdentifier(sid string) (*SubmissionStatus, error) {
-
-	rows, err := dao.Query("SELECT submission, status, updated_at FROM submission_status WHERE submission = $1 LIMIT 1", sid)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	ss, err := submissionStatusQueryResults(rows)
-	if err != nil {
-		return nil, err
-	}
-
-	return ss, nil
-}
-
 // GetSubmissionByIdentifier -- get the specified submission
 func (dao *Dao) GetSubmissionByIdentifier(sid string) (*Submission, error) {
 
-	rows, err := dao.Query("SELECT identifier, client, created_at FROM submissions WHERE identifier = $1 LIMIT 1", sid)
+	rows, err := dao.Query("SELECT identifier, client, status, created_at, updated_at FROM submissions WHERE identifier = $1 LIMIT 1", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +87,24 @@ func (dao *Dao) GetClientByIdentifier(cid string) (*Client, error) {
 // GetBagsByStatus -- get a list of bags in the current state
 func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 
-	rows, err := dao.Query("SELECT b.name, b.identifier, b.submission, b.created_at FROM bags b, bag_status s WHERE s.status = $1 AND b.identifier = s.bag;", status)
+	rows, err := dao.Query("SELECT name, submission, status, etag, created_at, updated_at FROM bags WHERE status = $1;", status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	bags, err := bagsQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return bags, nil
+}
+
+// GetBagsBySubmission -- get a list of bags in the current state
+func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
+
+	rows, err := dao.Query("SELECT name, submission, status, etag, created_at, updated_at FROM bags WHERE submission = $1;", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -134,24 +134,34 @@ func (dao *Dao) CreateNewSubmission(client string) (*Submission, error) {
 		return nil, err
 	}
 
-	// insert into submissions_status
-	//stmt2, err := dao.Prepare("INSERT INTO submission_status( submission, status ) VALUES( $1,$2 )")
-	//if err != nil {
-	//	return nil, err
-	//}
-	//defer stmt2.Close()
-
-	//err = execPrepared(stmt2, newIdentifier, SubmissionStatusRegistered)
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	// get the submission details
 	s, err := dao.GetSubmissionByIdentifier(newIdentifier)
 	if err != nil {
 		return nil, err
 	}
 	return s, nil
+}
+
+func (dao *Dao) CreateNewBag(bagName string, sid string) error {
+
+	// insert into bags
+	stmt1, err := dao.Prepare("INSERT INTO bags( name, submission ) VALUES( $1,$2 )")
+	if err != nil {
+		return err
+	}
+	defer stmt1.Close()
+	return execPrepared(stmt1, bagName, sid)
+}
+
+func (dao *Dao) CreateNewFile(fileName string, hash string, sid string, bagName string) error {
+
+	// insert into files
+	stmt1, err := dao.Prepare("INSERT INTO files( name, hash, submission, bag_name ) VALUES( $1,$2, $3, $4 )")
+	if err != nil {
+		return err
+	}
+	defer stmt1.Close()
+	return execPrepared(stmt1, fileName, hash, sid, bagName)
 }
 
 //
@@ -163,31 +173,7 @@ func submissionQueryResults(rows *sql.Rows) (*Submission, error) {
 	count := 0
 
 	for rows.Next() {
-		err := rows.Scan(&results.Identifier, &results.Client, &results.Created)
-		if err != nil {
-			return nil, err
-		}
-		count++
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	// check for not found
-	if count == 0 {
-		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrSubmissionNotFound)
-	}
-
-	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
-	return &results, nil
-}
-
-func submissionStatusQueryResults(rows *sql.Rows) (*SubmissionStatus, error) {
-	results := SubmissionStatus{}
-	count := 0
-
-	for rows.Next() {
-		err := rows.Scan(&results.Identifier, &results.Status, &results.Updated)
+		err := rows.Scan(&results.Identifier, &results.Client, &results.Status, &results.Created, &results.Updated)
 		if err != nil {
 			return nil, err
 		}
@@ -236,7 +222,7 @@ func bagsQueryResults(rows *sql.Rows) ([]Bag, error) {
 
 	for rows.Next() {
 		bag := Bag{}
-		err := rows.Scan(&bag.Name, &bag.Identifier, &bag.Submission, &bag.Created)
+		err := rows.Scan(&bag.Name, &bag.Submission, &bag.Status, &bag.ETag, &bag.Created, &bag.Updated)
 		if err != nil {
 			return nil, err
 		}
