@@ -50,6 +50,10 @@ func (dao *Dao) Check() error {
 	return dao.Ping()
 }
 
+//
+// get methods
+//
+
 // GetSubmissionByIdentifier -- get the specified submission
 func (dao *Dao) GetSubmissionByIdentifier(sid string) (*Submission, error) {
 
@@ -101,7 +105,7 @@ func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 	return bags, nil
 }
 
-// GetBagsBySubmission -- get a list of bags in the current state
+// GetBagsBySubmission -- get a list of bags in the specified submission
 func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 
 	rows, err := dao.Query("SELECT name, submission, status, etag, created_at, updated_at FROM bags WHERE submission = $1;", sid)
@@ -117,6 +121,64 @@ func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 
 	return bags, nil
 }
+
+// GetFilesBySubmission -- get a list of files in the specified submission
+func (dao *Dao) GetFilesBySubmission(sid string) ([]File, error) {
+
+	rows, err := dao.Query("SELECT name, hash, submission, bag_name, created_at FROM files WHERE submission = $1;", sid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	files, err := filesQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+// GetConflictFilesBySubmission -- get a list of conflicting files in the specified submission
+func (dao *Dao) GetConflictFilesBySubmission(sid string) ([]File, error) {
+
+	// FIXME
+
+	//rows, err := dao.Query("SELECT name, hash, submission, bag_name, created_at FROM files WHERE submission = $1;", sid)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//defer rows.Close()
+
+	//files, err := filesQueryResults(rows)
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	//return files, nil
+	return nil, ErrFileNotFound
+}
+
+// GetWhitelistedFiles -- get a list of files in the specified submission
+func (dao *Dao) GetWhitelistedFiles() ([]WhitelistedFile, error) {
+
+	rows, err := dao.Query("SELECT name, hash, created_at FROM whitelist;")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	files, err := whitelistFilesQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+//
+// create methods
+//
 
 // CreateNewSubmission -- create a new submission for the specified client
 func (dao *Dao) CreateNewSubmission(client string) (*Submission, error) {
@@ -237,6 +299,60 @@ func bagsQueryResults(rows *sql.Rows) ([]Bag, error) {
 	// check for not found
 	if count == 0 {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrBagNotFound)
+	}
+
+	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	return results, nil
+}
+
+func filesQueryResults(rows *sql.Rows) ([]File, error) {
+	results := make([]File, 0)
+	count := 0
+
+	for rows.Next() {
+		file := File{}
+		err := rows.Scan(&file.Name, &file.Hash, &file.Submission, &file.BagName, &file.Created)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, file)
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// check for not found
+	if count == 0 {
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrFileNotFound)
+	}
+
+	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	return results, nil
+}
+
+func whitelistFilesQueryResults(rows *sql.Rows) ([]WhitelistedFile, error) {
+	results := make([]WhitelistedFile, 0)
+	count := 0
+
+	for rows.Next() {
+		file := WhitelistedFile{}
+		err := rows.Scan(&file.Name, &file.Hash, &file.Created)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, file)
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// check for not found
+	if count == 0 {
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrFileNotFound)
 	}
 
 	//logDebug(log, fmt.Sprintf("found %d object(s)", count))

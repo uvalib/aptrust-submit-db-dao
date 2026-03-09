@@ -13,6 +13,7 @@ import (
 var ErrClientNotFound = fmt.Errorf("client not found")
 var ErrSubmissionNotFound = fmt.Errorf("submission not found")
 var ErrBagNotFound = fmt.Errorf("bag not found")
+var ErrFileNotFound = fmt.Errorf("file not found")
 
 type Client struct {
 	Name       string    `json:"name"`       // client name
@@ -43,6 +44,12 @@ type File struct {
 	BagName    string    `json:"bag"`        // owning bag name
 	Hash       string    `json:"hash"`       // file hash
 	Created    time.Time `json:"created"`    // created time
+}
+
+type WhitelistedFile struct {
+	Name    string    `json:"name"`    // file name
+	Hash    string    `json:"hash"`    // file hash
+	Created time.Time `json:"created"` // created time
 }
 
 //
