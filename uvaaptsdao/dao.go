@@ -88,6 +88,23 @@ func (dao *Dao) GetClientByIdentifier(cid string) (*Client, error) {
 	return c, nil
 }
 
+// GetBagBySubmissionAndName -- get the bag details for the specified submission and bag name
+func (dao *Dao) GetBagBySubmissionAndName(sid string, name string) (*Bag, error) {
+
+	rows, err := dao.Query("SELECT name, submission, status, etag, created_at, updated_at FROM bags WHERE submission = $1 AND name = $2 LIMIT 1", sid, name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	b, err := bagQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
 // GetBagsByStatus -- get a list of bags in the current state
 func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 
@@ -272,6 +289,30 @@ func clientQueryResults(rows *sql.Rows) (*Client, error) {
 	// check for not found
 	if count == 0 {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrClientNotFound)
+	}
+
+	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	return &results, nil
+}
+
+func bagQueryResults(rows *sql.Rows) (*Bag, error) {
+	results := Bag{}
+	count := 0
+
+	for rows.Next() {
+		err := rows.Scan(&results.Name, &results.Submission, &results.Status, &results.ETag, &results.Created, &results.Updated)
+		if err != nil {
+			return nil, err
+		}
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// check for not found
+	if count == 0 {
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrBagNotFound)
 	}
 
 	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
