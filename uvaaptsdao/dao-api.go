@@ -16,24 +16,29 @@ var ErrBagNotFound = fmt.Errorf("bag not found")
 var ErrFileNotFound = fmt.Errorf("file not found")
 
 type Client struct {
-	Name       string    `json:"name"`       // client name
-	Identifier string    `json:"identifier"` // client identifier
-	Created    time.Time `json:"created"`    // created time
+	Name           string    `json:"name"`            // client name
+	Identifier     string    `json:"identifier"`      // client identifier
+	DefaultStorage string    `json:"default_storage"` // default APTrust storage
+	ApprovalEmail  string    `json:"approval_email"`  // if client requires manual approval
+	Created        time.Time `json:"created"`         // created time
 }
 
 type Submission struct {
-	Identifier string    `json:"identifier"` // submission identifier
-	Client     string    `json:"client"`     // owning client
-	Status     string    `json:"status"`     // current status
-	Created    time.Time `json:"created"`    // created time
-	Updated    time.Time `json:"updated"`    // updated time
+	Identifier     string    `json:"identifier"`      // submission identifier
+	CollectionName string    `json:"collection_name"` // collection name (if appropriate)
+	Client         string    `json:"client"`          // owning client
+	Status         string    `json:"status"`          // current status
+	Storage        string    `json:"storage"`         // APTrust storage for this submission
+	ApprovalEmail  string    `json:"approval_email"`  // if client requires manual approval
+	Created        time.Time `json:"created"`         // created time
+	Updated        time.Time `json:"updated"`         // updated time
 }
 
 type Bag struct {
 	Name       string    `json:"name"`       // bag name
 	Submission string    `json:"submission"` // owning submission
 	Status     string    `json:"status"`     // current status
-	ETag       string    `json:"etag"`       // current status
+	ETag       string    `json:"etag"`       // etag of submitted file
 	Created    time.Time `json:"created"`    // created time
 	Updated    time.Time `json:"updated"`    // updated time
 }
@@ -47,9 +52,14 @@ type File struct {
 }
 
 type WhitelistedFile struct {
-	Name    string    `json:"name"`    // file name
 	Hash    string    `json:"hash"`    // file hash
+	Comment string    `json:"comment"` // a helpful comment or explanation
 	Created time.Time `json:"created"` // created time
+}
+
+type Status struct {
+	Status  string    `json:"status"`  // current status
+	Updated time.Time `json:"updated"` // updated time
 }
 
 //

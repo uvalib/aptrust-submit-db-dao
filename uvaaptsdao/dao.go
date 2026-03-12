@@ -7,6 +7,7 @@ package uvaaptsdao
 import (
 	"database/sql"
 	"fmt"
+
 	"github.com/rs/xid"
 	//"log"
 
@@ -57,7 +58,7 @@ func (dao *Dao) Check() error {
 // GetSubmissionByIdentifier -- get the specified submission
 func (dao *Dao) GetSubmissionByIdentifier(sid string) (*Submission, error) {
 
-	rows, err := dao.Query("SELECT identifier, client, status, created_at, updated_at FROM submissions WHERE identifier = $1 LIMIT 1", sid)
+	rows, err := dao.Query("SELECT identifier, client, storage, collection_name, status, created_at, updated_at FROM submissions WHERE identifier = $1 LIMIT 1", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +75,7 @@ func (dao *Dao) GetSubmissionByIdentifier(sid string) (*Submission, error) {
 // GetClientByIdentifier -- get the client details for the specified identifier
 func (dao *Dao) GetClientByIdentifier(cid string) (*Client, error) {
 
-	rows, err := dao.Query("SELECT name, identifier, created_at FROM clients WHERE identifier = $1 LIMIT 1", cid)
+	rows, err := dao.Query("SELECT name, identifier, default_storage, approval_email, created_at FROM clients WHERE identifier = $1 LIMIT 1", cid)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +180,7 @@ func (dao *Dao) GetConflictFilesBySubmission(sid string) ([]File, error) {
 // GetWhitelistedFiles -- get a list of files in the specified submission
 func (dao *Dao) GetWhitelistedFiles() ([]WhitelistedFile, error) {
 
-	rows, err := dao.Query("SELECT name, hash, created_at FROM whitelist;")
+	rows, err := dao.Query("SELECT hash, comment, created_at FROM whitelist;")
 	if err != nil {
 		return nil, err
 	}
@@ -252,7 +253,7 @@ func submissionQueryResults(rows *sql.Rows) (*Submission, error) {
 	count := 0
 
 	for rows.Next() {
-		err := rows.Scan(&results.Identifier, &results.Client, &results.Status, &results.Created, &results.Updated)
+		err := rows.Scan(&results.Identifier, &results.Client, &results.Storage, &results.CollectionName, &results.Status, &results.Created, &results.Updated)
 		if err != nil {
 			return nil, err
 		}
@@ -276,7 +277,7 @@ func clientQueryResults(rows *sql.Rows) (*Client, error) {
 	count := 0
 
 	for rows.Next() {
-		err := rows.Scan(&results.Name, &results.Identifier, &results.Created)
+		err := rows.Scan(&results.Name, &results.Identifier, &results.DefaultStorage, &results.ApprovalEmail, &results.Created)
 		if err != nil {
 			return nil, err
 		}
@@ -379,7 +380,7 @@ func whitelistFilesQueryResults(rows *sql.Rows) ([]WhitelistedFile, error) {
 
 	for rows.Next() {
 		file := WhitelistedFile{}
-		err := rows.Scan(&file.Name, &file.Hash, &file.Created)
+		err := rows.Scan(&file.Hash, &file.Comment, &file.Created)
 		if err != nil {
 			return nil, err
 		}
