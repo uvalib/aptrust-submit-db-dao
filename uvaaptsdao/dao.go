@@ -268,6 +268,18 @@ func (dao *Dao) UpdateBagState(bagName string, sid string, state string) error {
 	return execPrepared(stmt1, bagName, sid, state)
 }
 
+// UpdateBagETag - A special case where we update the bag etag after submitting to APT
+func (dao *Dao) UpdateBagETag(bagName string, sid string, etag string) error {
+
+	// update the bags table (this is the only case where we do this)
+	stmt1, err := dao.Prepare("UPDATE bags SET etag = $1 WHERE name = $2 AND submission = $3")
+	if err != nil {
+		return err
+	}
+	defer stmt1.Close()
+	return execPrepared(stmt1, etag, bagName, sid)
+}
+
 //
 // internal helpers
 //
