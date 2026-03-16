@@ -8,7 +8,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/rs/xid"
 	//"log"
 
 	// postgres
@@ -198,31 +197,26 @@ func (dao *Dao) GetWhitelistedFiles() ([]WhitelistedFile, error) {
 // create methods
 //
 
-// CreateNewSubmission -- create a new submission for the specified client
-func (dao *Dao) CreateNewSubmission(client string) (*Submission, error) {
+// AddSubmission -- add a new submission for the specified client
+func (dao *Dao) AddSubmission(sid string, cid string, collection string, storage string) error {
 
 	// insert into submissions
-	stmt1, err := dao.Prepare("INSERT INTO submissions( identifier, client ) VALUES( $1,$2 )")
+	stmt1, err := dao.Prepare("INSERT INTO submissions( identifier, client, collection_name, storage ) VALUES( $1,$2, $3, $4 )")
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer stmt1.Close()
 
-	newIdentifier := newSubmissionIdentifier()
-	err = execPrepared(stmt1, newIdentifier, client)
+	err = execPrepared(stmt1, sid, cid, collection, storage)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	// get the submission details
-	s, err := dao.GetSubmissionByIdentifier(newIdentifier)
-	if err != nil {
-		return nil, err
-	}
-	return s, nil
+	return nil
 }
 
-func (dao *Dao) CreateNewBag(bagName string, sid string) error {
+// AddNewBag -- add a new bag with the specified name and sibmission identifier
+func (dao *Dao) AddNewBag(bagName string, sid string) error {
 
 	// insert into bags
 	stmt1, err := dao.Prepare("INSERT INTO bags( name, submission ) VALUES( $1,$2 )")
@@ -233,7 +227,8 @@ func (dao *Dao) CreateNewBag(bagName string, sid string) error {
 	return execPrepared(stmt1, bagName, sid)
 }
 
-func (dao *Dao) CreateNewFile(fileName string, hash string, sid string, bagName string) error {
+// AddNewFile -- add a new file with the specified attributes
+func (dao *Dao) AddNewFile(fileName string, hash string, sid string, bagName string) error {
 
 	// insert into files
 	stmt1, err := dao.Prepare("INSERT INTO files( name, hash, submission, bag_name ) VALUES( $1,$2, $3, $4 )")
@@ -404,10 +399,6 @@ func whitelistFilesQueryResults(rows *sql.Rows) ([]WhitelistedFile, error) {
 func execPrepared(stmt *sql.Stmt, values ...any) error {
 	_, err := stmt.Exec(values...)
 	return err
-}
-
-func newSubmissionIdentifier() string {
-	return fmt.Sprintf("sid-%s", xid.New().String())
 }
 
 //
