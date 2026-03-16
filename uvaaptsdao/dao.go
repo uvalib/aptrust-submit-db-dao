@@ -19,6 +19,9 @@ type Dao struct {
 	*sql.DB // database connection
 }
 
+var initialSubmissionState = "registered"
+var initialBagState = "registered"
+
 func NewDao(host string, port int, user string, password string, dbname string) (*Dao, error) {
 
 	// connection attributes
@@ -57,7 +60,7 @@ func (dao *Dao) Check() error {
 // GetSubmissionByIdentifier -- get the specified submission
 func (dao *Dao) GetSubmissionByIdentifier(sid string) (*Submission, error) {
 
-	rows, err := dao.Query("SELECT identifier, client, storage, collection_name, status, created_at, updated_at FROM submissions WHERE identifier = $1 LIMIT 1", sid)
+	rows, err := dao.Query("SELECT identifier, client, storage, collection_name, created_at FROM submissions WHERE identifier = $1 LIMIT 1", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +94,7 @@ func (dao *Dao) GetClientByIdentifier(cid string) (*Client, error) {
 // GetBagBySubmissionAndName -- get the bag details for the specified submission and bag name
 func (dao *Dao) GetBagBySubmissionAndName(sid string, name string) (*Bag, error) {
 
-	rows, err := dao.Query("SELECT name, submission, status, etag, created_at, updated_at FROM bags WHERE submission = $1 AND name = $2 LIMIT 1", sid, name)
+	rows, err := dao.Query("SELECT name, submission, etag, created_at FROM bags WHERE submission = $1 AND name = $2 LIMIT 1", sid, name)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +111,7 @@ func (dao *Dao) GetBagBySubmissionAndName(sid string, name string) (*Bag, error)
 // GetBagsByStatus -- get a list of bags in the current state
 func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 
-	rows, err := dao.Query("SELECT name, submission, status, etag, created_at, updated_at FROM bags WHERE status = $1;", status)
+	rows, err := dao.Query("SELECT b.name, b.submission, b.etag, b.created_at FROM bags b, submission_state s1 WHERE s1.status = $1 AND s1.id = (SELECT max(s2.id) FROM submission_state s2 WHERE s1.submission = s2.submission) AND b.submission = s1.submission;", status)
 	if err != nil {
 		return nil, err
 	}
@@ -125,7 +128,7 @@ func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 // GetBagsBySubmission -- get a list of bags in the specified submission
 func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 
-	rows, err := dao.Query("SELECT name, submission, status, etag, created_at, updated_at FROM bags WHERE submission = $1;", sid)
+	rows, err := dao.Query("SELECT name, submission, etag, created_at FROM bags WHERE submission = $1;", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +197,7 @@ func (dao *Dao) GetWhitelistedFiles() ([]WhitelistedFile, error) {
 }
 
 //
-// create methods
+// add/update methods
 //
 
 // AddSubmission -- add a new submission for the specified client
@@ -212,7 +215,7 @@ func (dao *Dao) AddSubmission(sid string, cid string, collection string, storage
 		return err
 	}
 
-	return nil
+	return dao.UpdateSubmissionState(sid, initialSubmissionState)
 }
 
 // AddBag -- add a new bag with the specified name and sibmission identifier
@@ -224,7 +227,11 @@ func (dao *Dao) AddBag(bagName string, sid string) error {
 		return err
 	}
 	defer stmt1.Close()
-	return execPrepared(stmt1, bagName, sid)
+	err = execPrepared(stmt1, bagName, sid)
+	if err != nil {
+		return err
+	}
+	return dao.UpdateBagState(bagName, sid, initialBagState)
 }
 
 // AddFile -- add a new file with the specified attributes
@@ -239,6 +246,28 @@ func (dao *Dao) AddFile(fileName string, hash string, sid string, bagName string
 	return execPrepared(stmt1, fileName, hash, sid, bagName)
 }
 
+func (dao *Dao) UpdateSubmissionState(sid string, state string) error {
+
+	// insert into bag_state
+	stmt1, err := dao.Prepare("INSERT INTO submission_state( submission, status ) VALUES( $1,$2 )")
+	if err != nil {
+		return err
+	}
+	defer stmt1.Close()
+	return execPrepared(stmt1, sid, state)
+}
+
+func (dao *Dao) UpdateBagState(bagName string, sid string, state string) error {
+
+	// insert into submission_state
+	stmt1, err := dao.Prepare("INSERT INTO bag_state( name, submission, status ) VALUES( $1,$2,$3 )")
+	if err != nil {
+		return err
+	}
+	defer stmt1.Close()
+	return execPrepared(stmt1, bagName, sid, state)
+}
+
 //
 // internal helpers
 //
@@ -248,7 +277,7 @@ func submissionQueryResults(rows *sql.Rows) (*Submission, error) {
 	count := 0
 
 	for rows.Next() {
-		err := rows.Scan(&results.Identifier, &results.Client, &results.Storage, &results.CollectionName, &results.Status, &results.Created, &results.Updated)
+		err := rows.Scan(&results.Identifier, &results.Client, &results.Storage, &results.CollectionName, &results.Created)
 		if err != nil {
 			return nil, err
 		}
@@ -296,7 +325,7 @@ func bagQueryResults(rows *sql.Rows) (*Bag, error) {
 	count := 0
 
 	for rows.Next() {
-		err := rows.Scan(&results.Name, &results.Submission, &results.Status, &results.ETag, &results.Created, &results.Updated)
+		err := rows.Scan(&results.Name, &results.Submission, &results.ETag, &results.Created)
 		if err != nil {
 			return nil, err
 		}
@@ -321,7 +350,7 @@ func bagsQueryResults(rows *sql.Rows) ([]Bag, error) {
 
 	for rows.Next() {
 		bag := Bag{}
-		err := rows.Scan(&bag.Name, &bag.Submission, &bag.Status, &bag.ETag, &bag.Created, &bag.Updated)
+		err := rows.Scan(&bag.Name, &bag.Submission, &bag.ETag, &bag.Created)
 		if err != nil {
 			return nil, err
 		}

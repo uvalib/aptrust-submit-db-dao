@@ -27,20 +27,16 @@ type Submission struct {
 	Identifier     string    `json:"identifier"`      // submission identifier
 	CollectionName string    `json:"collection_name"` // collection name (if appropriate)
 	Client         string    `json:"client"`          // owning client
-	Status         string    `json:"status"`          // current status
 	Storage        string    `json:"storage"`         // APTrust storage for this submission
 	ApprovalEmail  string    `json:"approval_email"`  // if client requires manual approval
 	Created        time.Time `json:"created"`         // created time
-	Updated        time.Time `json:"updated"`         // updated time
 }
 
 type Bag struct {
 	Name       string    `json:"name"`       // bag name
 	Submission string    `json:"submission"` // owning submission
-	Status     string    `json:"status"`     // current status
 	ETag       string    `json:"etag"`       // etag of submitted file
 	Created    time.Time `json:"created"`    // created time
-	Updated    time.Time `json:"updated"`    // updated time
 }
 
 type File struct {
@@ -57,9 +53,17 @@ type WhitelistedFile struct {
 	Created time.Time `json:"created"` // created time
 }
 
-type Status struct {
-	Status  string    `json:"status"`  // current status
-	Updated time.Time `json:"updated"` // updated time
+type SubmissionStatus struct {
+	Submission string    `json:"submission"` // owning submission
+	Status     string    `json:"status"`     // current status
+	Updated    time.Time `json:"updated"`    // updated time
+}
+
+type BagStatus struct {
+	Submission string    `json:"submission"` // owning submission
+	Name       string    `json:"name"`       // bag name
+	Status     string    `json:"status"`     // current status
+	Updated    time.Time `json:"updated"`    // updated time
 }
 
 //
