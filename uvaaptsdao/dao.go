@@ -215,8 +215,8 @@ func (dao *Dao) AddSubmission(sid string, cid string, collection string, storage
 	return nil
 }
 
-// AddNewBag -- add a new bag with the specified name and sibmission identifier
-func (dao *Dao) AddNewBag(bagName string, sid string) error {
+// AddBag -- add a new bag with the specified name and sibmission identifier
+func (dao *Dao) AddBag(bagName string, sid string) error {
 
 	// insert into bags
 	stmt1, err := dao.Prepare("INSERT INTO bags( name, submission ) VALUES( $1,$2 )")
@@ -227,8 +227,8 @@ func (dao *Dao) AddNewBag(bagName string, sid string) error {
 	return execPrepared(stmt1, bagName, sid)
 }
 
-// AddNewFile -- add a new file with the specified attributes
-func (dao *Dao) AddNewFile(fileName string, hash string, sid string, bagName string) error {
+// AddFile -- add a new file with the specified attributes
+func (dao *Dao) AddFile(fileName string, hash string, sid string, bagName string) error {
 
 	// insert into files
 	stmt1, err := dao.Prepare("INSERT INTO files( name, hash, submission, bag_name ) VALUES( $1,$2, $3, $4 )")
