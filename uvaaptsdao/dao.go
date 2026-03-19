@@ -111,7 +111,8 @@ func (dao *Dao) GetBagBySubmissionAndName(sid string, name string) (*Bag, error)
 // GetBagsByStatus -- get a list of bags in the current state
 func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 
-	rows, err := dao.Query("SELECT b.name, b.submission, b.etag, b.created_at FROM bags b, submission_state s1 WHERE s1.status = $1 AND s1.id = (SELECT max(s2.id) FROM submission_state s2 WHERE s1.submission = s2.submission) AND b.submission = s1.submission;", status)
+	//	rows, err := dao.Query("SELECT b.name, b.submission, b.etag, b.created_at FROM bags b, bag_state s1 WHERE s1.status = $1 AND s1.id = (SELECT max(s2.id) FROM bag_state s2 WHERE s1.submission = s2.submission) AND b.submission = s1.submission", status)
+	rows, err := dao.Query("SELECT b.name, b.submission, b.etag, b.created_at FROM bags b")
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +129,7 @@ func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 // GetBagsBySubmission -- get a list of bags in the specified submission
 func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 
-	rows, err := dao.Query("SELECT name, submission, etag, created_at FROM bags WHERE submission = $1;", sid)
+	rows, err := dao.Query("SELECT name, submission, etag, created_at FROM bags WHERE submission = $1", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +146,7 @@ func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 // GetFilesBySubmission -- get a list of files in the specified submission
 func (dao *Dao) GetFilesBySubmission(sid string) ([]File, error) {
 
-	rows, err := dao.Query("SELECT name, hash, submission, bag_name, created_at FROM files WHERE submission = $1;", sid)
+	rows, err := dao.Query("SELECT name, hash, submission, bag_name, created_at FROM files WHERE submission = $1", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -162,27 +163,41 @@ func (dao *Dao) GetFilesBySubmission(sid string) ([]File, error) {
 // GetConflictFilesBySubmission -- get a list of conflicting files in the specified submission
 func (dao *Dao) GetConflictFilesBySubmission(sid string) ([]File, error) {
 
-	// FIXME
+	rows, err := dao.Query("SELECT f.name, f.hash, f.submission, f.bag_name, f.created_at FROM files f, apt_files a WHERE f.submission = $1 AND f.hash = a.hash", sid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	//rows, err := dao.Query("SELECT name, hash, submission, bag_name, created_at FROM files WHERE submission = $1;", sid)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//defer rows.Close()
+	files, err := filesQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
 
-	//files, err := filesQueryResults(rows)
-	//if err != nil {
-	//	return nil, err
-	//}
+	return files, nil
+}
 
-	//return files, nil
-	return nil, ErrFileNotFound
+// GetAptFilesByHash -- get a list of APT files with the specified hash
+func (dao *Dao) GetAptFilesByHash(hash string) ([]File, error) {
+
+	rows, err := dao.Query("SELECT file_name, hash, '', bag_name, apt_added_at FROM apt_files WHERE hash = $1", hash)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	files, err := filesQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
 }
 
 // GetWhitelistedFiles -- get a list of files in the specified submission
 func (dao *Dao) GetWhitelistedFiles() ([]WhitelistedFile, error) {
 
-	rows, err := dao.Query("SELECT hash, comment, created_at FROM whitelist;")
+	rows, err := dao.Query("SELECT hash, comment, created_at FROM whitelist")
 	if err != nil {
 		return nil, err
 	}
