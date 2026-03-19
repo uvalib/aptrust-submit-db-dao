@@ -111,8 +111,9 @@ func (dao *Dao) GetBagBySubmissionAndName(sid string, name string) (*Bag, error)
 // GetBagsByStatus -- get a list of bags in the current state
 func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 
-	//	rows, err := dao.Query("SELECT b.name, b.submission, b.etag, b.created_at FROM bags b, bag_state s1 WHERE s1.status = $1 AND s1.id = (SELECT max(s2.id) FROM bag_state s2 WHERE s1.submission = s2.submission) AND b.submission = s1.submission", status)
-	rows, err := dao.Query("SELECT b.name, b.submission, b.etag, b.created_at FROM bags b")
+	fmt.Printf("DEBUG: getting by status [%s]...\n", status)
+
+	rows, err := dao.Query("SELECT b.name, b.submission, b.etag, b.created_at FROM bags b, bag_state s1 WHERE s1.status = $1 AND s1.id = (SELECT max(id) FROM bag_state s2 WHERE s2.submission = b.submission AND s2.name = b.name)", status)
 	if err != nil {
 		return nil, err
 	}
