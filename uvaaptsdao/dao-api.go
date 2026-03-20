@@ -16,6 +16,7 @@ var ErrBagNotFound = fmt.Errorf("bag not found")
 var ErrFileNotFound = fmt.Errorf("file not found")
 
 type Client struct {
+	Id             int64     `json:"id"`              // record id
 	Name           string    `json:"name"`            // client name
 	Identifier     string    `json:"identifier"`      // client identifier
 	DefaultStorage string    `json:"default_storage"` // default APTrust storage
@@ -24,6 +25,7 @@ type Client struct {
 }
 
 type Submission struct {
+	Id             int64     `json:"id"`              // record id
 	Identifier     string    `json:"identifier"`      // submission identifier
 	CollectionName string    `json:"collection_name"` // collection name (if appropriate)
 	Client         string    `json:"client"`          // owning client
@@ -33,6 +35,7 @@ type Submission struct {
 }
 
 type Bag struct {
+	Id         int64     `json:"id"`         // record id
 	Name       string    `json:"name"`       // bag name
 	Submission string    `json:"submission"` // owning submission
 	ETag       string    `json:"etag"`       // etag of submitted file
@@ -40,6 +43,7 @@ type Bag struct {
 }
 
 type File struct {
+	Id         int64     `json:"id"`         // record id
 	Name       string    `json:"name"`       // file name
 	Submission string    `json:"submission"` // owning submission
 	BagName    string    `json:"bag"`        // owning bag name

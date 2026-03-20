@@ -60,7 +60,7 @@ func (dao *Dao) Check() error {
 // GetSubmissionByIdentifier -- get the specified submission
 func (dao *Dao) GetSubmissionByIdentifier(sid string) (*Submission, error) {
 
-	rows, err := dao.Query("SELECT identifier, client, storage, collection_name, created_at FROM submissions WHERE identifier = $1 LIMIT 1", sid)
+	rows, err := dao.Query("SELECT id, identifier, client, storage, collection_name, created_at FROM submissions WHERE identifier = $1 LIMIT 1", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (dao *Dao) GetSubmissionByIdentifier(sid string) (*Submission, error) {
 // GetClientByIdentifier -- get the client details for the specified identifier
 func (dao *Dao) GetClientByIdentifier(cid string) (*Client, error) {
 
-	rows, err := dao.Query("SELECT name, identifier, default_storage, approval_email, created_at FROM clients WHERE identifier = $1 LIMIT 1", cid)
+	rows, err := dao.Query("SELECT id, name, identifier, default_storage, approval_email, created_at FROM clients WHERE identifier = $1 LIMIT 1", cid)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (dao *Dao) GetClientByIdentifier(cid string) (*Client, error) {
 // GetBagBySubmissionAndName -- get the bag details for the specified submission and bag name
 func (dao *Dao) GetBagBySubmissionAndName(sid string, name string) (*Bag, error) {
 
-	rows, err := dao.Query("SELECT name, submission, etag, created_at FROM bags WHERE submission = $1 AND name = $2 LIMIT 1", sid, name)
+	rows, err := dao.Query("SELECT id, name, submission, etag, created_at FROM bags WHERE submission = $1 AND name = $2 LIMIT 1", sid, name)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 
 	fmt.Printf("DEBUG: getting by status [%s]...\n", status)
 
-	rows, err := dao.Query("SELECT b.name, b.submission, b.etag, b.created_at FROM bags b, bag_state s1 WHERE s1.status = $1 AND s1.id = (SELECT max(id) FROM bag_state s2 WHERE s2.submission = b.submission AND s2.name = b.name)", status)
+	rows, err := dao.Query("SELECT b.id, b.name, b.submission, b.etag, b.created_at FROM bags b, bag_state s1 WHERE s1.status = $1 AND s1.id = (SELECT max(id) FROM bag_state s2 WHERE s2.submission = b.submission AND s2.name = b.name)", status)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 // GetBagsBySubmission -- get a list of bags in the specified submission
 func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 
-	rows, err := dao.Query("SELECT name, submission, etag, created_at FROM bags WHERE submission = $1", sid)
+	rows, err := dao.Query("SELECT id, name, submission, etag, created_at FROM bags WHERE submission = $1", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -147,7 +147,7 @@ func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 // GetFilesBySubmission -- get a list of files in the specified submission
 func (dao *Dao) GetFilesBySubmission(sid string) ([]File, error) {
 
-	rows, err := dao.Query("SELECT name, hash, submission, bag_name, created_at FROM files WHERE submission = $1", sid)
+	rows, err := dao.Query("SELECT id, name, hash, submission, bag_name, created_at FROM files WHERE submission = $1", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (dao *Dao) GetFilesBySubmission(sid string) ([]File, error) {
 // GetConflictFilesBySubmission -- get a list of conflicting files in the specified submission
 func (dao *Dao) GetConflictFilesBySubmission(sid string) ([]File, error) {
 
-	rows, err := dao.Query("SELECT f.name, f.hash, f.submission, f.bag_name, f.created_at FROM files f, apt_files a WHERE f.submission = $1 AND f.hash = a.hash", sid)
+	rows, err := dao.Query("SELECT f.id, f.name, f.hash, f.submission, f.bag_name, f.created_at FROM files f, apt_files a WHERE f.submission = $1 AND f.hash = a.hash", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +181,7 @@ func (dao *Dao) GetConflictFilesBySubmission(sid string) ([]File, error) {
 // GetAptFilesByHash -- get a list of APT files with the specified hash
 func (dao *Dao) GetAptFilesByHash(hash string) ([]File, error) {
 
-	rows, err := dao.Query("SELECT file_name, hash, '', bag_name, apt_added_at FROM apt_files WHERE hash = $1", hash)
+	rows, err := dao.Query("SELECT id, file_name, hash, '', bag_name, apt_added_at FROM apt_files WHERE hash = $1", hash)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func (dao *Dao) GetWhitelistedFiles() ([]WhitelistedFile, error) {
 }
 
 //
-// add/update methods
+// add methods
 //
 
 // AddSubmission -- add a new submission for the specified client
@@ -262,6 +262,34 @@ func (dao *Dao) AddFile(fileName string, hash string, sid string, bagName string
 	return execPrepared(stmt1, fileName, hash, sid, bagName)
 }
 
+// AddApproval -- add a new approval with the specified attributes
+func (dao *Dao) AddApproval(sid string, who string) error {
+
+	// insert into files
+	stmt1, err := dao.Prepare("INSERT INTO approvals( submission, who ) VALUES( $1,$2 )")
+	if err != nil {
+		return err
+	}
+	defer stmt1.Close()
+	return execPrepared(stmt1, sid, who)
+}
+
+// AddConflict -- add a new conflict with the specified attributes
+func (dao *Dao) AddConflict(sid string, newFileId int64, basis string, conflictFileId int64) error {
+
+	// insert into files
+	stmt1, err := dao.Prepare("INSERT INTO conflicts( submission, new_file, basis, conflicting_file ) VALUES( $1,$2, $3, $4 )")
+	if err != nil {
+		return err
+	}
+	defer stmt1.Close()
+	return execPrepared(stmt1, sid, newFileId, basis, conflictFileId)
+}
+
+//
+// update methods
+//
+
 func (dao *Dao) UpdateSubmissionState(sid string, state string) error {
 
 	// insert into bag_state
@@ -305,7 +333,7 @@ func submissionQueryResults(rows *sql.Rows) (*Submission, error) {
 	count := 0
 
 	for rows.Next() {
-		err := rows.Scan(&results.Identifier, &results.Client, &results.Storage, &results.CollectionName, &results.Created)
+		err := rows.Scan(&results.Id, &results.Identifier, &results.Client, &results.Storage, &results.CollectionName, &results.Created)
 		if err != nil {
 			return nil, err
 		}
@@ -329,7 +357,7 @@ func clientQueryResults(rows *sql.Rows) (*Client, error) {
 	count := 0
 
 	for rows.Next() {
-		err := rows.Scan(&results.Name, &results.Identifier, &results.DefaultStorage, &results.ApprovalEmail, &results.Created)
+		err := rows.Scan(&results.Id, &results.Name, &results.Identifier, &results.DefaultStorage, &results.ApprovalEmail, &results.Created)
 		if err != nil {
 			return nil, err
 		}
@@ -378,7 +406,7 @@ func bagsQueryResults(rows *sql.Rows) ([]Bag, error) {
 
 	for rows.Next() {
 		bag := Bag{}
-		err := rows.Scan(&bag.Name, &bag.Submission, &bag.ETag, &bag.Created)
+		err := rows.Scan(&bag.Id, &bag.Name, &bag.Submission, &bag.ETag, &bag.Created)
 		if err != nil {
 			return nil, err
 		}
@@ -405,7 +433,7 @@ func filesQueryResults(rows *sql.Rows) ([]File, error) {
 
 	for rows.Next() {
 		file := File{}
-		err := rows.Scan(&file.Name, &file.Hash, &file.Submission, &file.BagName, &file.Created)
+		err := rows.Scan(&file.Id, &file.Name, &file.Hash, &file.Submission, &file.BagName, &file.Created)
 		if err != nil {
 			return nil, err
 		}
