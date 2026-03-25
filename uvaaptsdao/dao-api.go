@@ -57,16 +57,16 @@ type WhitelistedFile struct {
 	Created time.Time `json:"created"` // created time
 }
 
-type SubmissionStatus struct {
+type SubmissionState struct {
 	Submission string    `json:"submission"` // owning submission
-	Status     string    `json:"status"`     // current status
+	State      string    `json:"state"`      // current state
 	Updated    time.Time `json:"updated"`    // updated time
 }
 
-type BagStatus struct {
+type BagState struct {
 	Submission string    `json:"submission"` // owning submission
 	Name       string    `json:"name"`       // bag name
-	Status     string    `json:"status"`     // current status
+	State      string    `json:"state"`      // current state
 	Updated    time.Time `json:"updated"`    // updated time
 }
 

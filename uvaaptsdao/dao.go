@@ -212,6 +212,38 @@ func (dao *Dao) GetWhitelistedFiles() ([]WhitelistedFile, error) {
 	return files, nil
 }
 
+func (dao *Dao) GetSubmissionStateByIdentifier(sid string) (*SubmissionState, error) {
+
+	rows, err := dao.Query("SELECT submission, status, created_at FROM submission_state WHERE submission = $1 AND id = (SELECT MAX(id) FROM submission_state WHERE submission = $1)", sid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	ss, err := submissionStateQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return ss, nil
+}
+
+func (dao *Dao) GetBagStateBySubmissionAndName(sid string, name string) (*BagState, error) {
+
+	rows, err := dao.Query("SELECT submission, status, created_at FROM bag_state WHERE submission = $1 AND name = $2 AND id = (SELECT MAX(id) FROM bag_state WHERE submission = $1 AND name = $2)", sid, name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	bs, err := bagStateQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return bs, nil
+}
+
 //
 // add methods
 //
@@ -479,6 +511,54 @@ func whitelistFilesQueryResults(rows *sql.Rows) ([]WhitelistedFile, error) {
 
 	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
 	return results, nil
+}
+
+func submissionStateQueryResults(rows *sql.Rows) (*SubmissionState, error) {
+	results := SubmissionState{}
+	count := 0
+
+	for rows.Next() {
+		err := rows.Scan(&results.Submission, &results.State, &results.Updated)
+		if err != nil {
+			return nil, err
+		}
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// check for not found
+	if count == 0 {
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrSubmissionNotFound)
+	}
+
+	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	return &results, nil
+}
+
+func bagStateQueryResults(rows *sql.Rows) (*BagState, error) {
+	results := BagState{}
+	count := 0
+
+	for rows.Next() {
+		err := rows.Scan(&results.Name, &results.Submission, &results.State, &results.Updated)
+		if err != nil {
+			return nil, err
+		}
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// check for not found
+	if count == 0 {
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrBagNotFound)
+	}
+
+	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	return &results, nil
 }
 
 func execPrepared(stmt *sql.Stmt, values ...any) error {
