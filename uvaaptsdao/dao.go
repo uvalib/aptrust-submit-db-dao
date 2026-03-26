@@ -111,8 +111,6 @@ func (dao *Dao) GetBagBySubmissionAndName(sid string, name string) (*Bag, error)
 // GetBagsByStatus -- get a list of bags in the current state
 func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 
-	fmt.Printf("DEBUG: getting by status [%s]...\n", status)
-
 	rows, err := dao.Query("SELECT b.id, b.name, b.submission, b.etag, b.created_at FROM bags b, bag_state s1 WHERE s1.status = $1 AND s1.id = (SELECT max(id) FROM bag_state s2 WHERE s2.submission = b.submission AND s2.name = b.name)", status)
 	if err != nil {
 		return nil, err
@@ -212,6 +210,7 @@ func (dao *Dao) GetWhitelistedFiles() ([]WhitelistedFile, error) {
 	return files, nil
 }
 
+// GetSubmissionStateByIdentifier -- get the submission state of the specified identifier
 func (dao *Dao) GetSubmissionStateByIdentifier(sid string) (*SubmissionState, error) {
 
 	rows, err := dao.Query("SELECT submission, status, created_at FROM submission_state WHERE submission = $1 AND id = (SELECT MAX(id) FROM submission_state WHERE submission = $1)", sid)
@@ -228,9 +227,29 @@ func (dao *Dao) GetSubmissionStateByIdentifier(sid string) (*SubmissionState, er
 	return ss, nil
 }
 
+// GetBagStateBySubmissionAndName -- get the bag state for the specified submission/bag name combination
 func (dao *Dao) GetBagStateBySubmissionAndName(sid string, name string) (*BagState, error) {
 
-	rows, err := dao.Query("SELECT submission, status, created_at FROM bag_state WHERE submission = $1 AND name = $2 AND id = (SELECT MAX(id) FROM bag_state WHERE submission = $1 AND name = $2)", sid, name)
+	rows, err := dao.Query("SELECT name, submission, status, created_at FROM bag_state WHERE submission = $1 AND name = $2 AND id = (SELECT MAX(id) FROM bag_state WHERE submission = $1 AND name = $2)", sid, name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	bs, err := bagStateQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return bs, nil
+}
+
+// GetBagStateByName -- get the bag state for the specified bag name
+// note this will get the status from the --latest-- submission as the same bag name
+// can be submitted in multiple submissions
+func (dao *Dao) GetBagStateByName(name string) (*BagState, error) {
+
+	rows, err := dao.Query("SELECT name, submission, status, created_at FROM bag_state WHERE name = $1 AND id = (SELECT MAX(id) FROM bag_state WHERE name = $1)", name)
 	if err != nil {
 		return nil, err
 	}
