@@ -329,12 +329,24 @@ func (dao *Dao) AddApproval(sid string, who string) error {
 func (dao *Dao) AddConflict(sid string, newFileId int64, basis string, conflictFileId int64) error {
 
 	// insert into files
-	stmt1, err := dao.Prepare("INSERT INTO conflicts( submission, new_file, basis, conflicting_file ) VALUES( $1,$2, $3, $4 )")
+	stmt1, err := dao.Prepare("INSERT INTO submission_conflicts( submission, new_file, basis, conflicting_file ) VALUES( $1,$2, $3, $4 )")
 	if err != nil {
 		return err
 	}
 	defer stmt1.Close()
 	return execPrepared(stmt1, sid, newFileId, basis, conflictFileId)
+}
+
+// AddFailure -- add a new failure with the specified attributes
+func (dao *Dao) AddFailure(sid string, reason string) error {
+
+	// insert into files
+	stmt1, err := dao.Prepare("INSERT INTO submission_failures( submission, failure ) VALUES( $1,$2 )")
+	if err != nil {
+		return err
+	}
+	defer stmt1.Close()
+	return execPrepared(stmt1, sid, reason)
 }
 
 //
