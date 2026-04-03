@@ -30,7 +30,6 @@ type Submission struct {
 	CollectionName string    `json:"collection_name"` // collection name (if appropriate)
 	Client         string    `json:"client"`          // owning client
 	Storage        string    `json:"storage"`         // APTrust storage for this submission
-	ApprovalEmail  string    `json:"approval_email"`  // if client requires manual approval
 	Created        time.Time `json:"created"`         // created time
 }
 
