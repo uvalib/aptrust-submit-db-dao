@@ -42,6 +42,33 @@ func submissionQueryResults(rows *sql.Rows) (*Submission, error) {
 	return &results, nil
 }
 
+func submissionsQueryResults(rows *sql.Rows) ([]Submission, error) {
+	results := make([]Submission, 0)
+	count := 0
+
+	for rows.Next() {
+		sub := Submission{}
+		err := rows.Scan(&sub.Id, &sub.Identifier, &sub.Client, &sub.Storage, &sub.CollectionName, &sub.Created)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, sub)
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// check for not found
+	if count == 0 {
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrSubmissionNotFound)
+	}
+
+	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	return results, nil
+}
+
 func clientQueryResults(rows *sql.Rows) (*Client, error) {
 	results := Client{}
 	count := 0
@@ -144,12 +171,12 @@ func filesQueryResults(rows *sql.Rows) ([]File, error) {
 	return results, nil
 }
 
-func whitelistFilesQueryResults(rows *sql.Rows) ([]WhitelistedFile, error) {
-	results := make([]WhitelistedFile, 0)
+func hashAllowListQueryResults(rows *sql.Rows) ([]HashAllowEntry, error) {
+	results := make([]HashAllowEntry, 0)
 	count := 0
 
 	for rows.Next() {
-		file := WhitelistedFile{}
+		file := HashAllowEntry{}
 		err := rows.Scan(&file.Hash, &file.Comment, &file.Created)
 		if err != nil {
 			return nil, err
@@ -165,6 +192,33 @@ func whitelistFilesQueryResults(rows *sql.Rows) ([]WhitelistedFile, error) {
 	// check for not found
 	if count == 0 {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrFileNotFound)
+	}
+
+	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	return results, nil
+}
+
+func bagAllowListQueryResults(rows *sql.Rows) ([]BagAllowEntry, error) {
+	results := make([]BagAllowEntry, 0)
+	count := 0
+
+	for rows.Next() {
+		file := BagAllowEntry{}
+		err := rows.Scan(&file.Name, &file.Comment, &file.Created)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, file)
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// check for not found
+	if count == 0 {
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrBagNotFound)
 	}
 
 	//logDebug(log, fmt.Sprintf("found %d object(s)", count))

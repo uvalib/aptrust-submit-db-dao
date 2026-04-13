@@ -83,6 +83,23 @@ func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 	return bags, nil
 }
 
+// GetSubmissionsByStatus -- get a list of submissions in the current state
+func (dao *Dao) GetSubmissionsByStatus(status string) ([]Submission, error) {
+
+	rows, err := dao.Query("SELECT s.id, s.identifier, s.client, s.storage, s.collection_name, s.created_at FROM submissions s, submission_state s1 WHERE s1.status = $1 AND s1.id = (SELECT max(id) FROM submission_state s2 WHERE s2.submission = s.identifier)", status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	subs, err := submissionsQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return subs, nil
+}
+
 // GetBagsBySubmission -- get a list of bags in the specified submission
 func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 
@@ -120,7 +137,7 @@ func (dao *Dao) GetFilesBySubmission(sid string) ([]File, error) {
 // GetConflictFilesBySubmission -- get a list of conflicting files in the specified submission
 func (dao *Dao) GetConflictFilesBySubmission(sid string) ([]File, error) {
 
-	rows, err := dao.Query("SELECT f.id, f.name, f.hash, f.submission, f.bag_name, f.created_at FROM files f, apt_files a WHERE f.submission = $1 AND f.hash = a.hash", sid)
+	rows, err := dao.Query("SELECT DISTINCT(f.id), f.name, f.hash, f.submission, f.bag_name, f.created_at FROM files f, apt_files a WHERE f.submission = $1 AND f.hash = a.hash", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -151,21 +168,38 @@ func (dao *Dao) GetAptFilesByHash(hash string) ([]File, error) {
 	return files, nil
 }
 
-// GetWhitelistedFiles -- get a list of files in the specified submission
-func (dao *Dao) GetWhitelistedFiles() ([]WhitelistedFile, error) {
+// GetHashAllowList -- get a list of hashes that should be 'ignored'
+func (dao *Dao) GetHashAllowList() ([]HashAllowEntry, error) {
 
-	rows, err := dao.Query("SELECT hash, comment, created_at FROM whitelist")
+	rows, err := dao.Query("SELECT hash, comment, created_at FROM hash_allowlist")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	files, err := whitelistFilesQueryResults(rows)
+	hashes, err := hashAllowListQueryResults(rows)
 	if err != nil {
 		return nil, err
 	}
 
-	return files, nil
+	return hashes, nil
+}
+
+// GetBagAllowList -- get a list of bags that should be 'ignored'
+func (dao *Dao) GetBagAllowList() ([]BagAllowEntry, error) {
+
+	rows, err := dao.Query("SELECT name, comment, created_at FROM bag_allowlist")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	bags, err := bagAllowListQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return bags, nil
 }
 
 // GetSubmissionStateByIdentifier -- get the submission state of the specified identifier

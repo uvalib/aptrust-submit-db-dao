@@ -50,8 +50,14 @@ type File struct {
 	Created    time.Time `json:"created"`    // created time
 }
 
-type WhitelistedFile struct {
+type HashAllowEntry struct {
 	Hash    string    `json:"hash"`    // file hash
+	Comment string    `json:"comment"` // a helpful comment or explanation
+	Created time.Time `json:"created"` // created time
+}
+
+type BagAllowEntry struct {
+	Name    string    `json:"name"`    // bag name
 	Comment string    `json:"comment"` // a helpful comment or explanation
 	Created time.Time `json:"created"` // created time
 }
