@@ -89,6 +89,7 @@ type Conflict struct {
 	Submission       string    `json:"submission"`         // owning submission
 	BagName          string    `json:"bag_name"`           // bag name
 	FileName         string    `json:"file_name"`          // file name
+	Hash             string    `json:"hash"`               // file hash
 	ConflictBagName  string    `json:"conflict_bag_name"`  // conflicting bag name
 	ConflictFileName string    `json:"conflict_file_name"` // conflicting file name
 	Created          time.Time `json:"created"`            // created time
