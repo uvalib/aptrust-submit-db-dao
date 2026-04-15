@@ -38,22 +38,22 @@ func submissionQueryResults(rows *sql.Rows) (*Submission, error) {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrSubmissionNotFound)
 	}
 
-	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	//fmt.Printf("found %d object(s)\n", count)
 	return &results, nil
 }
 
-func submissionsQueryResults(rows *sql.Rows) ([]Submission, error) {
+func submissionListQueryResults(rows *sql.Rows) ([]Submission, error) {
 	results := make([]Submission, 0)
 	count := 0
 
 	for rows.Next() {
-		sub := Submission{}
-		err := rows.Scan(&sub.Id, &sub.Identifier, &sub.Client, &sub.Storage, &sub.CollectionName, &sub.Created)
+		result := Submission{}
+		err := rows.Scan(&result.Id, &result.Identifier, &result.Client, &result.Storage, &result.CollectionName, &result.Created)
 		if err != nil {
 			return nil, err
 		}
 
-		results = append(results, sub)
+		results = append(results, result)
 		count++
 	}
 	if err := rows.Err(); err != nil {
@@ -65,7 +65,7 @@ func submissionsQueryResults(rows *sql.Rows) ([]Submission, error) {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrSubmissionNotFound)
 	}
 
-	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	//fmt.Printf("found %d object(s)\n", count)
 	return results, nil
 }
 
@@ -89,7 +89,7 @@ func clientQueryResults(rows *sql.Rows) (*Client, error) {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrClientNotFound)
 	}
 
-	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	//fmt.Printf("found %d object(s)\n", count)
 	return &results, nil
 }
 
@@ -113,22 +113,22 @@ func bagQueryResults(rows *sql.Rows) (*Bag, error) {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrBagNotFound)
 	}
 
-	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	//fmt.Printf("found %d object(s)\n", count)
 	return &results, nil
 }
 
-func bagsQueryResults(rows *sql.Rows) ([]Bag, error) {
+func bagListQueryResults(rows *sql.Rows) ([]Bag, error) {
 	results := make([]Bag, 0)
 	count := 0
 
 	for rows.Next() {
-		bag := Bag{}
-		err := rows.Scan(&bag.Id, &bag.Name, &bag.Submission, &bag.ETag, &bag.Created)
+		result := Bag{}
+		err := rows.Scan(&result.Id, &result.Name, &result.Submission, &result.ETag, &result.Created)
 		if err != nil {
 			return nil, err
 		}
 
-		results = append(results, bag)
+		results = append(results, result)
 		count++
 	}
 	if err := rows.Err(); err != nil {
@@ -140,22 +140,22 @@ func bagsQueryResults(rows *sql.Rows) ([]Bag, error) {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrBagNotFound)
 	}
 
-	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	//fmt.Printf("found %d object(s)\n", count)
 	return results, nil
 }
 
-func filesQueryResults(rows *sql.Rows) ([]File, error) {
+func fileListQueryResults(rows *sql.Rows) ([]File, error) {
 	results := make([]File, 0)
 	count := 0
 
 	for rows.Next() {
-		file := File{}
-		err := rows.Scan(&file.Id, &file.Name, &file.Hash, &file.Submission, &file.BagName, &file.Created)
+		result := File{}
+		err := rows.Scan(&result.Id, &result.Name, &result.Hash, &result.Submission, &result.BagName, &result.Created)
 		if err != nil {
 			return nil, err
 		}
 
-		results = append(results, file)
+		results = append(results, result)
 		count++
 	}
 	if err := rows.Err(); err != nil {
@@ -167,7 +167,7 @@ func filesQueryResults(rows *sql.Rows) ([]File, error) {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrFileNotFound)
 	}
 
-	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	//fmt.Printf("found %d object(s)\n", count)
 	return results, nil
 }
 
@@ -176,13 +176,13 @@ func hashAllowListQueryResults(rows *sql.Rows) ([]HashAllowEntry, error) {
 	count := 0
 
 	for rows.Next() {
-		file := HashAllowEntry{}
-		err := rows.Scan(&file.Hash, &file.Comment, &file.Created)
+		result := HashAllowEntry{}
+		err := rows.Scan(&result.Hash, &result.Comment, &result.Created)
 		if err != nil {
 			return nil, err
 		}
 
-		results = append(results, file)
+		results = append(results, result)
 		count++
 	}
 	if err := rows.Err(); err != nil {
@@ -194,7 +194,7 @@ func hashAllowListQueryResults(rows *sql.Rows) ([]HashAllowEntry, error) {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrFileNotFound)
 	}
 
-	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	//fmt.Printf("found %d object(s)\n", count)
 	return results, nil
 }
 
@@ -203,13 +203,13 @@ func bagAllowListQueryResults(rows *sql.Rows) ([]BagAllowEntry, error) {
 	count := 0
 
 	for rows.Next() {
-		file := BagAllowEntry{}
-		err := rows.Scan(&file.Name, &file.Comment, &file.Created)
+		result := BagAllowEntry{}
+		err := rows.Scan(&result.Name, &result.Comment, &result.Created)
 		if err != nil {
 			return nil, err
 		}
 
-		results = append(results, file)
+		results = append(results, result)
 		count++
 	}
 	if err := rows.Err(); err != nil {
@@ -221,7 +221,7 @@ func bagAllowListQueryResults(rows *sql.Rows) ([]BagAllowEntry, error) {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrBagNotFound)
 	}
 
-	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	//fmt.Printf("found %d object(s)\n", count)
 	return results, nil
 }
 
@@ -245,8 +245,35 @@ func submissionStateQueryResults(rows *sql.Rows) (*SubmissionState, error) {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrSubmissionNotFound)
 	}
 
-	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	//fmt.Printf("found %d object(s)\n", count)
 	return &results, nil
+}
+
+func submissionStateListQueryResults(rows *sql.Rows) ([]SubmissionState, error) {
+	results := make([]SubmissionState, 0)
+	count := 0
+
+	for rows.Next() {
+		result := SubmissionState{}
+		err := rows.Scan(&result.Submission, &result.State, &result.Updated)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, result)
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// check for not found
+	if count == 0 {
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrSubmissionNotFound)
+	}
+
+	//fmt.Printf("found %d object(s)\n", count)
+	return results, nil
 }
 
 func bagStateQueryResults(rows *sql.Rows) (*BagState, error) {
@@ -269,8 +296,89 @@ func bagStateQueryResults(rows *sql.Rows) (*BagState, error) {
 		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrBagNotFound)
 	}
 
-	//logDebug(log, fmt.Sprintf("found %d object(s)", count))
+	//fmt.Printf("found %d object(s)\n", count)
 	return &results, nil
+}
+
+func bagStateListQueryResults(rows *sql.Rows) ([]BagState, error) {
+	results := make([]BagState, 0)
+	count := 0
+
+	for rows.Next() {
+		result := BagState{}
+		err := rows.Scan(&result.Name, &result.Submission, &result.State, &result.Updated)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, result)
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// check for not found
+	if count == 0 {
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrBagNotFound)
+	}
+
+	//fmt.Printf("found %d object(s)\n", count)
+	return results, nil
+}
+
+func failureListQueryResults(rows *sql.Rows) ([]Failure, error) {
+	results := make([]Failure, 0)
+	count := 0
+
+	for rows.Next() {
+		result := Failure{}
+		err := rows.Scan(&result.Id, &result.Submission, &result.Failure, &result.Created)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, result)
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// check for not found
+	if count == 0 {
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrFailureNotFound)
+	}
+
+	//fmt.Printf("found %d object(s)\n", count)
+	return results, nil
+}
+
+func conflictListQueryResults(rows *sql.Rows) ([]Conflict, error) {
+	results := make([]Conflict, 0)
+	count := 0
+
+	for rows.Next() {
+		result := Conflict{}
+		err := rows.Scan(&result.Submission, &result.BagName, &result.FileName, &result.ConflictBagName, &result.ConflictFileName, &result.Created)
+		if err != nil {
+			return nil, err
+		}
+
+		results = append(results, result)
+		count++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// check for not found
+	if count == 0 {
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrConflictNotFound)
+	}
+
+	//fmt.Printf("found %d object(s)\n", count)
+	return results, nil
 }
 
 func execPrepared(stmt *sql.Stmt, values ...any) error {

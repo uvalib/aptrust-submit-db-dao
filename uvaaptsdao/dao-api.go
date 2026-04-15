@@ -14,6 +14,8 @@ var ErrClientNotFound = fmt.Errorf("client not found")
 var ErrSubmissionNotFound = fmt.Errorf("submission not found")
 var ErrBagNotFound = fmt.Errorf("bag not found")
 var ErrFileNotFound = fmt.Errorf("file not found")
+var ErrConflictNotFound = fmt.Errorf("conflict not found")
+var ErrFailureNotFound = fmt.Errorf("failure not found")
 
 type Client struct {
 	Id             int64     `json:"id"`              // record id
@@ -73,6 +75,23 @@ type BagState struct {
 	Name       string    `json:"name"`       // bag name
 	State      string    `json:"state"`      // current state
 	Updated    time.Time `json:"updated"`    // updated time
+}
+
+type Failure struct {
+	Id         int64     `json:"id"`         // record id
+	Submission string    `json:"submission"` // owning submission
+	Failure    string    `json:"failure"`    // textual failure
+	Created    time.Time `json:"created"`    // created time
+}
+
+type Conflict struct {
+	Id               int64     `json:"id"`                 // record id
+	Submission       string    `json:"submission"`         // owning submission
+	BagName          string    `json:"bag_name"`           // bag name
+	FileName         string    `json:"file_name"`          // file name
+	ConflictBagName  string    `json:"conflict_bag_name"`  // conflicting bag name
+	ConflictFileName string    `json:"conflict_file_name"` // conflicting file name
+	Created          time.Time `json:"created"`            // created time
 }
 
 //

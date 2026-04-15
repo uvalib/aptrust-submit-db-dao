@@ -75,7 +75,7 @@ func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 	}
 	defer rows.Close()
 
-	bags, err := bagsQueryResults(rows)
+	bags, err := bagListQueryResults(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (dao *Dao) GetSubmissionsByStatus(status string) ([]Submission, error) {
 	}
 	defer rows.Close()
 
-	subs, err := submissionsQueryResults(rows)
+	subs, err := submissionListQueryResults(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 	}
 	defer rows.Close()
 
-	bags, err := bagsQueryResults(rows)
+	bags, err := bagListQueryResults(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func (dao *Dao) GetFilesBySubmission(sid string) ([]File, error) {
 	}
 	defer rows.Close()
 
-	files, err := filesQueryResults(rows)
+	files, err := fileListQueryResults(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -134,8 +134,8 @@ func (dao *Dao) GetFilesBySubmission(sid string) ([]File, error) {
 	return files, nil
 }
 
-// GetConflictFilesBySubmission -- get a list of conflicting files in the specified submission
-func (dao *Dao) GetConflictFilesBySubmission(sid string) ([]File, error) {
+// GetAptHashConflictsBySubmission -- get a list of conflicting files in the specified submission
+func (dao *Dao) GetAptHashConflictsBySubmission(sid string) ([]File, error) {
 
 	rows, err := dao.Query("SELECT DISTINCT(f.id), f.name, f.hash, f.submission, f.bag_name, f.created_at FROM files f, apt_files a WHERE f.submission = $1 AND f.hash = a.hash", sid)
 	if err != nil {
@@ -143,7 +143,7 @@ func (dao *Dao) GetConflictFilesBySubmission(sid string) ([]File, error) {
 	}
 	defer rows.Close()
 
-	files, err := filesQueryResults(rows)
+	files, err := fileListQueryResults(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (dao *Dao) GetAptFilesByHash(hash string) ([]File, error) {
 	}
 	defer rows.Close()
 
-	files, err := filesQueryResults(rows)
+	files, err := fileListQueryResults(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -211,12 +211,29 @@ func (dao *Dao) GetSubmissionStateByIdentifier(sid string) (*SubmissionState, er
 	}
 	defer rows.Close()
 
-	ss, err := submissionStateQueryResults(rows)
+	state, err := submissionStateQueryResults(rows)
 	if err != nil {
 		return nil, err
 	}
 
-	return ss, nil
+	return state, nil
+}
+
+// GetSubmissionStateHistoryByIdentifier -- get the submission state history for the specified identifier
+func (dao *Dao) GetSubmissionStateHistoryByIdentifier(sid string) ([]SubmissionState, error) {
+
+	rows, err := dao.Query("SELECT submission, status, created_at FROM submission_state WHERE submission = $1 ORDER BY id", sid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	states, err := submissionStateListQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return states, nil
 }
 
 // GetBagStateBySubmissionAndName -- get the bag state for the specified submission/bag name combination
@@ -228,12 +245,12 @@ func (dao *Dao) GetBagStateBySubmissionAndName(sid string, name string) (*BagSta
 	}
 	defer rows.Close()
 
-	bs, err := bagStateQueryResults(rows)
+	state, err := bagStateQueryResults(rows)
 	if err != nil {
 		return nil, err
 	}
 
-	return bs, nil
+	return state, nil
 }
 
 // GetBagStateByName -- get the bag state for the specified bag name
@@ -247,12 +264,62 @@ func (dao *Dao) GetBagStateByName(name string) (*BagState, error) {
 	}
 	defer rows.Close()
 
-	bs, err := bagStateQueryResults(rows)
+	state, err := bagStateQueryResults(rows)
 	if err != nil {
 		return nil, err
 	}
 
-	return bs, nil
+	return state, nil
+}
+
+func (dao *Dao) GetBagStateHistoryByName(name string) ([]BagState, error) {
+
+	rows, err := dao.Query("SELECT name, submission, status, created_at FROM bag_state WHERE name = $1 ORDER BY submission, id", name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	states, err := bagStateListQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return states, nil
+}
+
+// GetFailuresBySubmission -- get a list of (validation) failures in the specified submission
+func (dao *Dao) GetFailuresBySubmission(sid string) ([]Failure, error) {
+
+	rows, err := dao.Query("SELECT id, submission, failure, created_at FROM submission_failures WHERE submission = $1 ORDER BY id", sid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	failures, err := failureListQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return failures, nil
+}
+
+// GetConflictsBySubmission -- get a list of conflicts in the specified submission
+func (dao *Dao) GetConflictsBySubmission(sid string) ([]Conflict, error) {
+
+	rows, err := dao.Query("SELECT c.submission, f.bag_name, f.name, a.bag_name, a.file_name, c.created_at FROM submission_conflicts c, files f, apt_files a WHERE c.submission = $1 AND f.id = c.new_file AND a.id = c.conflicting_file ORDER BY c.id", sid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	conflicts, err := conflictListQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return conflicts, nil
 }
 
 //
