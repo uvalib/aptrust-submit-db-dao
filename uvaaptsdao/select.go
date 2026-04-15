@@ -83,6 +83,23 @@ func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 	return bags, nil
 }
 
+// GetBagsByName -- get a list of all bags of the specified name
+func (dao *Dao) GetBagsByName(name string) ([]Bag, error) {
+
+	rows, err := dao.Query("SELECT id, name, submission, etag, created_at FROM bags WHERE name = $1 ORDER BY id", name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	bags, err := bagListQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return bags, nil
+}
+
 // GetSubmissionsByStatus -- get a list of submissions in the current state
 func (dao *Dao) GetSubmissionsByStatus(status string) ([]Submission, error) {
 
