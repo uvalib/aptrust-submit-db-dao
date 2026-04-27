@@ -53,7 +53,7 @@ func (dao *Dao) AddBag(bagName string, sid string) error {
 }
 
 // AddFile -- add a new file with the specified attributes
-func (dao *Dao) AddFile(fileName string, bagName string, sid string, hash string, filesize int32) error {
+func (dao *Dao) AddFile(fileName string, bagName string, sid string, hash string, filesize int64) error {
 
 	// insert into files
 	stmt, err := dao.Prepare("INSERT INTO files( name, bag_name, submission, hash, file_size ) VALUES( $1,$2, $3, $4 )")
@@ -101,7 +101,7 @@ func (dao *Dao) AddFailure(sid string, reason string) error {
 }
 
 // AddAPTCache -- add a new APTrust cache entry with the specified attributes
-func (dao *Dao) AddAPTCache(fileName string, bagName string, hash string, filesize int32, added string) error {
+func (dao *Dao) AddAPTCache(fileName string, bagName string, hash string, filesize int64, added string) error {
 
 	// insert into files
 	stmt, err := dao.Prepare("INSERT INTO apt_files( file_name, bag_name, hash, file_size, apt_added_at ) VALUES( $1,$2, $3, $4, $5 )")
