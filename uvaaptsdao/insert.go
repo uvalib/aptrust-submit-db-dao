@@ -56,7 +56,7 @@ func (dao *Dao) AddBag(bagName string, sid string) error {
 func (dao *Dao) AddFile(fileName string, bagName string, sid string, hash string, filesize int64) error {
 
 	// insert into files
-	stmt, err := dao.Prepare("INSERT INTO files( name, bag_name, submission, hash, file_size ) VALUES( $1,$2, $3, $4 )")
+	stmt, err := dao.Prepare("INSERT INTO files( name, bag_name, submission, hash, file_size ) VALUES( $1,$2, $3, $4, $5 )")
 	if err != nil {
 		return err
 	}
