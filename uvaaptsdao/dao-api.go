@@ -17,6 +17,27 @@ var ErrFileNotFound = fmt.Errorf("file not found")
 var ErrConflictNotFound = fmt.Errorf("conflict not found")
 var ErrFailureNotFound = fmt.Errorf("failure not found")
 
+// submission status definitions
+var SubmissionStatusRegistered = "registered"
+var SubmissionStatusValidating = "validating"
+var SubmissionStatusBuilding = "building"
+var SubmissionStatusPendingApproval = "pending-approval"
+var SubmissionStatusSubmitting = "submitting"
+var SubmissionStatusPendingIngest = "pending-ingest"
+var SubmissionStatusError = "error"
+var SubmissionStatusIncomplete = "incomplete"
+var SubmissionStatusComplete = "complete"
+var SubmissionStatusAbandoned = "abandoned"
+
+// bag status definitions
+var BagStatusRegistered = "registered"
+var BagStatusBuilding = "building"
+var BagStatusReady = "ready"
+var BagStatusSubmitting = "submitting"
+var BagStatusPendingIngest = "pending-ingest"
+var BagStatusError = "error"
+var bagStatusComplete = "complete"
+
 type Client struct {
 	Id             int64     `json:"id"`              // record id
 	Name           string    `json:"name"`            // client name
@@ -49,6 +70,7 @@ type File struct {
 	Submission string    `json:"submission"` // owning submission
 	BagName    string    `json:"bag"`        // owning bag name
 	Hash       string    `json:"hash"`       // file hash
+	Size       int32     `json:"size"`       // file size
 	Created    time.Time `json:"created"`    // created time
 }
 
@@ -92,6 +114,7 @@ type Conflict struct {
 	Hash             string    `json:"hash"`               // file hash
 	ConflictBagName  string    `json:"conflict_bag_name"`  // conflicting bag name
 	ConflictFileName string    `json:"conflict_file_name"` // conflicting file name
+	Ignored          bool      `json:"ignored"`            // if conflict is ignored
 	Created          time.Time `json:"created"`            // created time
 }
 

@@ -150,7 +150,7 @@ func fileListQueryResults(rows *sql.Rows) ([]File, error) {
 
 	for rows.Next() {
 		result := File{}
-		err := rows.Scan(&result.Id, &result.Name, &result.Hash, &result.Submission, &result.BagName, &result.Created)
+		err := rows.Scan(&result.Id, &result.Name, &result.BagName, &result.Submission, &result.Hash, &result.Size, &result.Created)
 		if err != nil {
 			return nil, err
 		}
