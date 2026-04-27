@@ -37,6 +37,7 @@ var BagStatusSubmitting = "submitting"
 var BagStatusPendingIngest = "pending-ingest"
 var BagStatusError = "error"
 var BagStatusComplete = "complete"
+var BagStatusAbandoned = "abandoned"
 
 type Client struct {
 	Id             int64     `json:"id"`              // record id
