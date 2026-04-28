@@ -77,15 +77,15 @@ func (dao *Dao) AddApproval(sid string, who string) error {
 }
 
 // AddConflict -- add a new conflict with the specified attributes
-func (dao *Dao) AddConflict(sid string, newFileId int64, basis string, conflictFileId int64) error {
+func (dao *Dao) AddConflict(sid string, newFileId int64, basis string, conflictFileId int64, ignored bool) error {
 
 	// insert into files
-	stmt, err := dao.Prepare("INSERT INTO submission_conflicts( submission, new_file, basis, conflicting_file ) VALUES( $1,$2, $3, $4 )")
+	stmt, err := dao.Prepare("INSERT INTO submission_conflicts( submission, new_file, basis, conflicting_file, ignored ) VALUES( $1,$2, $3, $4, $5 )")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
-	return execPrepared(stmt, sid, newFileId, basis, conflictFileId)
+	return execPrepared(stmt, sid, newFileId, basis, conflictFileId, ignored)
 }
 
 // AddFailure -- add a new failure with the specified attributes
