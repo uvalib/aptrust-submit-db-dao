@@ -11,9 +11,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var initialSubmissionState = "registered"
-var initialBagState = "registered"
-
 //
 // add methods
 //
@@ -33,14 +30,14 @@ func (dao *Dao) AddSubmission(sid string, cid string, collection string, storage
 		return err
 	}
 
-	return dao.UpdateSubmissionState(sid, initialSubmissionState)
+	return dao.UpdateSubmissionState(sid, SubmissionStatusRegistered)
 }
 
 // AddBag -- add a new bag with the specified name and sibmission identifier
 func (dao *Dao) AddBag(bagName string, sid string) error {
 
 	// insert into bags
-	stmt, err := dao.Prepare("INSERT INTO bags( name, submission ) VALUES( $1,$2 )")
+	stmt, err := dao.Prepare("INSERT INTO bags( bag_name, submission ) VALUES( $1,$2 )")
 	if err != nil {
 		return err
 	}
@@ -49,7 +46,7 @@ func (dao *Dao) AddBag(bagName string, sid string) error {
 	if err != nil {
 		return err
 	}
-	return dao.UpdateBagState(bagName, sid, initialBagState)
+	return dao.UpdateBagState(bagName, sid, BagStatusRegistered)
 }
 
 // AddFile -- add a new file with the specified attributes

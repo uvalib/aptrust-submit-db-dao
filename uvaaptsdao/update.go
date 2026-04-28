@@ -17,8 +17,8 @@ import (
 
 func (dao *Dao) UpdateSubmissionState(sid string, state string) error {
 
-	// insert into bag_state
-	stmt, err := dao.Prepare("INSERT INTO submission_state( submission, status ) VALUES( $1,$2 )")
+	// insert into submission_states
+	stmt, err := dao.Prepare("INSERT INTO submission_states( submission, status ) VALUES( $1,$2 )")
 	if err != nil {
 		return err
 	}
@@ -28,8 +28,8 @@ func (dao *Dao) UpdateSubmissionState(sid string, state string) error {
 
 func (dao *Dao) UpdateBagState(bagName string, sid string, state string) error {
 
-	// insert into submission_state
-	stmt, err := dao.Prepare("INSERT INTO bag_state( name, submission, status ) VALUES( $1,$2,$3 )")
+	// insert into bag_states
+	stmt, err := dao.Prepare("INSERT INTO bag_states( bag_name, submission, status ) VALUES( $1,$2,$3 )")
 	if err != nil {
 		return err
 	}
@@ -41,7 +41,7 @@ func (dao *Dao) UpdateBagState(bagName string, sid string, state string) error {
 func (dao *Dao) UpdateBagETag(bagName string, sid string, etag string) error {
 
 	// update the bags table (this is the only case where we do this)
-	stmt, err := dao.Prepare("UPDATE bags SET etag = $1 WHERE name = $2 AND submission = $3")
+	stmt, err := dao.Prepare("UPDATE bags SET etag = $1 WHERE bag_name = $2 AND submission = $3")
 	if err != nil {
 		return err
 	}

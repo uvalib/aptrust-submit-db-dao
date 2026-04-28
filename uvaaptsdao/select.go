@@ -52,7 +52,7 @@ func (dao *Dao) GetClientByIdentifier(cid string) (*Client, error) {
 // GetBagBySubmissionAndName -- get the bag details for the specified submission and bag name
 func (dao *Dao) GetBagBySubmissionAndName(sid string, name string) (*Bag, error) {
 
-	rows, err := dao.Query("SELECT id, name, submission, etag, created_at FROM bags WHERE submission = $1 AND name = $2 LIMIT 1", sid, name)
+	rows, err := dao.Query("SELECT id, bag_name, submission, etag, created_at FROM bags WHERE submission = $1 AND bag_name = $2 LIMIT 1", sid, name)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (dao *Dao) GetBagBySubmissionAndName(sid string, name string) (*Bag, error)
 // GetBagsByStatus -- get a list of bags in the current state
 func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 
-	rows, err := dao.Query("SELECT b.id, b.name, b.submission, b.etag, b.created_at FROM bags b, bag_state s1 WHERE s1.status = $1 AND s1.id = (SELECT max(id) FROM bag_state s2 WHERE s2.submission = b.submission AND s2.name = b.name)", status)
+	rows, err := dao.Query("SELECT b.id, b.bag_name, b.submission, b.etag, b.created_at FROM bags b, bag_states s1 WHERE s1.status = $1 AND s1.id = (SELECT max(id) FROM bag_states s2 WHERE s2.submission = b.submission AND s2.bag_name = b.bag_name)", status)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 // GetBagsByName -- get a list of all bags of the specified name
 func (dao *Dao) GetBagsByName(name string) ([]Bag, error) {
 
-	rows, err := dao.Query("SELECT id, name, submission, etag, created_at FROM bags WHERE name = $1 ORDER BY id", name)
+	rows, err := dao.Query("SELECT id, bag_name, submission, etag, created_at FROM bags WHERE bag_name = $1 ORDER BY id", name)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (dao *Dao) GetBagsByName(name string) ([]Bag, error) {
 // GetSubmissionsByStatus -- get a list of submissions in the current state
 func (dao *Dao) GetSubmissionsByStatus(status string) ([]Submission, error) {
 
-	rows, err := dao.Query("SELECT s.id, s.identifier, s.client, s.storage, s.collection_name, s.created_at FROM submissions s, submission_state s1 WHERE s1.status = $1 AND s1.id = (SELECT max(id) FROM submission_state s2 WHERE s2.submission = s.identifier)", status)
+	rows, err := dao.Query("SELECT s.id, s.identifier, s.client, s.storage, s.collection_name, s.created_at FROM submissions s, submission_states s1 WHERE s1.status = $1 AND s1.id = (SELECT max(id) FROM submission_states s2 WHERE s2.submission = s.identifier)", status)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (dao *Dao) GetSubmissionsByStatus(status string) ([]Submission, error) {
 // GetBagsBySubmission -- get a list of bags in the specified submission
 func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 
-	rows, err := dao.Query("SELECT id, name, submission, etag, created_at FROM bags WHERE submission = $1", sid)
+	rows, err := dao.Query("SELECT id, bag_name, submission, etag, created_at FROM bags WHERE submission = $1", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +222,7 @@ func (dao *Dao) GetBagAllowList() ([]BagAllowEntry, error) {
 // GetSubmissionStateByIdentifier -- get the submission state of the specified identifier
 func (dao *Dao) GetSubmissionStateByIdentifier(sid string) (*SubmissionState, error) {
 
-	rows, err := dao.Query("SELECT submission, status, created_at FROM submission_state WHERE submission = $1 AND id = (SELECT MAX(id) FROM submission_state WHERE submission = $1)", sid)
+	rows, err := dao.Query("SELECT submission, status, created_at FROM submission_states WHERE submission = $1 AND id = (SELECT MAX(id) FROM submission_states WHERE submission = $1)", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +239,7 @@ func (dao *Dao) GetSubmissionStateByIdentifier(sid string) (*SubmissionState, er
 // GetSubmissionStateHistoryByIdentifier -- get the submission state history for the specified identifier
 func (dao *Dao) GetSubmissionStateHistoryByIdentifier(sid string) ([]SubmissionState, error) {
 
-	rows, err := dao.Query("SELECT submission, status, created_at FROM submission_state WHERE submission = $1 ORDER BY id", sid)
+	rows, err := dao.Query("SELECT submission, status, created_at FROM submission_states WHERE submission = $1 ORDER BY id", sid)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +256,7 @@ func (dao *Dao) GetSubmissionStateHistoryByIdentifier(sid string) ([]SubmissionS
 // GetBagStateBySubmissionAndName -- get the bag state for the specified submission/bag name combination
 func (dao *Dao) GetBagStateBySubmissionAndName(sid string, name string) (*BagState, error) {
 
-	rows, err := dao.Query("SELECT name, submission, status, created_at FROM bag_state WHERE submission = $1 AND name = $2 AND id = (SELECT MAX(id) FROM bag_state WHERE submission = $1 AND name = $2)", sid, name)
+	rows, err := dao.Query("SELECT bag_name, submission, status, created_at FROM bag_states WHERE submission = $1 AND bag_name = $2 AND id = (SELECT MAX(id) FROM bag_states WHERE submission = $1 AND bag_name = $2)", sid, name)
 	if err != nil {
 		return nil, err
 	}
@@ -275,7 +275,7 @@ func (dao *Dao) GetBagStateBySubmissionAndName(sid string, name string) (*BagSta
 // can be submitted in multiple submissions
 func (dao *Dao) GetBagStateByName(name string) (*BagState, error) {
 
-	rows, err := dao.Query("SELECT name, submission, status, created_at FROM bag_state WHERE name = $1 AND id = (SELECT MAX(id) FROM bag_state WHERE name = $1)", name)
+	rows, err := dao.Query("SELECT bag_name, submission, status, created_at FROM bag_states WHERE bag_name = $1 AND id = (SELECT MAX(id) FROM bag_states WHERE bag_name = $1)", name)
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +291,7 @@ func (dao *Dao) GetBagStateByName(name string) (*BagState, error) {
 
 func (dao *Dao) GetBagStateHistoryByName(name string) ([]BagState, error) {
 
-	rows, err := dao.Query("SELECT name, submission, status, created_at FROM bag_state WHERE name = $1 ORDER BY submission, id", name)
+	rows, err := dao.Query("SELECT bag_name, submission, status, created_at FROM bag_states WHERE bag_name = $1 ORDER BY submission, id", name)
 	if err != nil {
 		return nil, err
 	}
