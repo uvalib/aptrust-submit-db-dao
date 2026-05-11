@@ -48,6 +48,16 @@ func (dao *Dao) DeleteConflictsBySubmission(sid string) error {
 	return execPrepared(stmt, sid)
 }
 
+func (dao *Dao) DeleteApprovalsBySubmission(sid string) error {
+
+	stmt, err := dao.Prepare("DELETE FROM approvals WHERE submission = $1")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	return execPrepared(stmt, sid)
+}
+
 func (dao *Dao) DeleteBagStatesBySubmission(sid string) error {
 
 	stmt, err := dao.Prepare("DELETE FROM bag_states WHERE submission = $1")
