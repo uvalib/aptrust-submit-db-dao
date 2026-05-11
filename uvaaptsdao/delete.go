@@ -48,6 +48,36 @@ func (dao *Dao) DeleteConflictsBySubmission(sid string) error {
 	return execPrepared(stmt, sid)
 }
 
+func (dao *Dao) DeleteBagStatesBySubmission(sid string) error {
+
+	stmt, err := dao.Prepare("DELETE FROM bag_states WHERE submission = $1")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	return execPrepared(stmt, sid)
+}
+
+func (dao *Dao) DeleteSubmissionStatesBySubmission(sid string) error {
+
+	stmt, err := dao.Prepare("DELETE FROM submission_states WHERE submission = $1")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	return execPrepared(stmt, sid)
+}
+
+func (dao *Dao) DeleteSubmission(sid string) error {
+
+	stmt, err := dao.Prepare("DELETE FROM submissions WHERE identifier = $1")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	return execPrepared(stmt, sid)
+}
+
 //
 // end of file
 //
