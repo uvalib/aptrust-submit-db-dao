@@ -109,6 +109,28 @@ func (dao *Dao) AddAPTCache(fileName string, bagName string, hash string, filesi
 	return execPrepared(stmt, fileName, bagName, hash, filesize, added)
 }
 
+func (dao *Dao) AddSubmissionState(sid string, state string, timestamp string) error {
+
+	// insert into submission_states
+	stmt, err := dao.Prepare("INSERT INTO submission_states( submission, status, created_at ) VALUES( $1,$2,$3 )")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	return execPrepared(stmt, sid, state, timestamp)
+}
+
+func (dao *Dao) AddBagState(bagName string, sid string, state string, timestamp string) error {
+
+	// insert into bag_states
+	stmt, err := dao.Prepare("INSERT INTO bag_states( bag_name, submission, status, created_at ) VALUES( $1,$2,$3, $4 )")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	return execPrepared(stmt, bagName, sid, state, timestamp)
+}
+
 //
 // end of file
 //
