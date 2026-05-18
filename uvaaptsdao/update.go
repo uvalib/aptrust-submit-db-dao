@@ -29,7 +29,7 @@ func (dao *Dao) UpdateSubmissionState(sid string, state string) error {
 func (dao *Dao) UpdateSubmissionStorage(sid string, storage string) error {
 
 	// update the submissions table (this is the only case where we do this)
-	stmt, err := dao.Prepare("UPDATE submissions SET storage = $1 WHERE submission = $2")
+	stmt, err := dao.Prepare("UPDATE submissions SET storage = $1 WHERE identifier = $2")
 	if err != nil {
 		return err
 	}
