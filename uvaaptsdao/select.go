@@ -151,6 +151,23 @@ func (dao *Dao) GetFilesBySubmission(sid string) ([]File, error) {
 	return files, nil
 }
 
+// GetFilesBySubmissionAndBagName -- get a list of files in the specified submission
+func (dao *Dao) GetFilesBySubmissionAndBagName(sid string, bid string) ([]File, error) {
+
+	rows, err := dao.Query("SELECT id, name, bag_name, submission, hash, file_size, created_at FROM files WHERE submission = $1 and bag_name = $2", sid, bid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	files, err := fileListQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
 // GetAptHashConflictsBySubmission -- get a list of conflicting files in the specified submission
 func (dao *Dao) GetAptHashConflictsBySubmission(sid string) ([]File, error) {
 
@@ -172,6 +189,23 @@ func (dao *Dao) GetAptHashConflictsBySubmission(sid string) ([]File, error) {
 func (dao *Dao) GetAptFilesByHash(hash string) ([]File, error) {
 
 	rows, err := dao.Query("SELECT id, file_name, bag_name, '', hash, file_size, apt_added_at FROM apt_files WHERE hash = $1", hash)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	files, err := fileListQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+// GetAptFilesByBag -- get a list of APT files from the specified bag
+func (dao *Dao) GetAptFilesByBag(bag string) ([]File, error) {
+
+	rows, err := dao.Query("SELECT id, file_name, bag_name, '', hash, file_size, apt_added_at FROM apt_files WHERE bag_name = $1", bag)
 	if err != nil {
 		return nil, err
 	}
