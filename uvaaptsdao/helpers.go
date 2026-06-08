@@ -7,6 +7,7 @@ package uvaaptsdao
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	//"log"
 
@@ -384,6 +385,17 @@ func conflictListQueryResults(rows *sql.Rows) ([]Conflict, error) {
 func execPrepared(stmt *sql.Stmt, values ...any) error {
 	_, err := stmt.Exec(values...)
 	return err
+}
+
+func funcEntry(fname string) func() {
+	fmt.Printf("DEBUG:   fn: %s\n", fname)
+
+	start := time.Now()
+	name := fname
+	return func() {
+		duration := time.Since(start)
+		fmt.Printf("DEBUG: exit: %s (%d ms)\n", name, duration.Milliseconds())
+	}
 }
 
 //

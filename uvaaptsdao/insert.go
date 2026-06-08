@@ -18,6 +18,10 @@ import (
 // AddSubmission -- add a new submission for the specified client
 func (dao *Dao) AddSubmission(sid string, cid string, collection string, storage string) error {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.AddSubmission")
+	defer funcExit()
+
 	// insert into submissions
 	stmt, err := dao.Prepare("INSERT INTO submissions( identifier, client, collection_name, storage ) VALUES( $1,$2, $3, $4 )")
 	if err != nil {
@@ -36,6 +40,10 @@ func (dao *Dao) AddSubmission(sid string, cid string, collection string, storage
 // AddBag -- add a new bag with the specified name and sibmission identifier
 func (dao *Dao) AddBag(bagName string, sid string) error {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.AddBag")
+	defer funcExit()
+
 	// insert into bags
 	stmt, err := dao.Prepare("INSERT INTO bags( bag_name, submission ) VALUES( $1,$2 )")
 	if err != nil {
@@ -52,6 +60,10 @@ func (dao *Dao) AddBag(bagName string, sid string) error {
 // AddFile -- add a new file with the specified attributes
 func (dao *Dao) AddFile(fileName string, bagName string, sid string, hash string, filesize int64) error {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.AddFile")
+	defer funcExit()
+
 	// insert into files
 	stmt, err := dao.Prepare("INSERT INTO files( name, bag_name, submission, hash, file_size ) VALUES( $1,$2, $3, $4, $5 )")
 	if err != nil {
@@ -63,6 +75,10 @@ func (dao *Dao) AddFile(fileName string, bagName string, sid string, hash string
 
 // AddApproval -- add a new approval with the specified attributes
 func (dao *Dao) AddApproval(sid string, who string) error {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.AddApproval")
+	defer funcExit()
 
 	// insert into files
 	stmt, err := dao.Prepare("INSERT INTO approvals( submission, who ) VALUES( $1,$2 )")
@@ -76,6 +92,10 @@ func (dao *Dao) AddApproval(sid string, who string) error {
 // AddConflict -- add a new conflict with the specified attributes
 func (dao *Dao) AddConflict(sid string, newFileId int64, basis string, conflictFileId int64, ignored bool) error {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.AddConflict")
+	defer funcExit()
+
 	// insert into files
 	stmt, err := dao.Prepare("INSERT INTO submission_conflicts( submission, new_file, basis, conflicting_file, ignored ) VALUES( $1,$2, $3, $4, $5 )")
 	if err != nil {
@@ -87,6 +107,10 @@ func (dao *Dao) AddConflict(sid string, newFileId int64, basis string, conflictF
 
 // AddFailure -- add a new failure with the specified attributes
 func (dao *Dao) AddFailure(sid string, reason string) error {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.AddFailure")
+	defer funcExit()
 
 	// insert into files
 	stmt, err := dao.Prepare("INSERT INTO submission_failures( submission, failure ) VALUES( $1,$2 )")
@@ -100,6 +124,10 @@ func (dao *Dao) AddFailure(sid string, reason string) error {
 // AddAPTCache -- add a new APTrust cache entry with the specified attributes
 func (dao *Dao) AddAPTCache(fileName string, bagName string, hash string, filesize int64, added string) error {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.AddAPTCache")
+	defer funcExit()
+
 	// insert into files
 	stmt, err := dao.Prepare("INSERT INTO apt_files( file_name, bag_name, hash, file_size, apt_added_at ) VALUES( $1,$2, $3, $4, $5 )")
 	if err != nil {
@@ -111,6 +139,10 @@ func (dao *Dao) AddAPTCache(fileName string, bagName string, hash string, filesi
 
 func (dao *Dao) AddSubmissionState(sid string, state string, timestamp string) error {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.AddSubmissionState")
+	defer funcExit()
+
 	// insert into submission_states
 	stmt, err := dao.Prepare("INSERT INTO submission_states( submission, status, created_at ) VALUES( $1,$2,$3 )")
 	if err != nil {
@@ -121,6 +153,10 @@ func (dao *Dao) AddSubmissionState(sid string, state string, timestamp string) e
 }
 
 func (dao *Dao) AddBagState(bagName string, sid string, state string, timestamp string) error {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.AddBagState")
+	defer funcExit()
 
 	// insert into bag_states
 	stmt, err := dao.Prepare("INSERT INTO bag_states( bag_name, submission, status, created_at ) VALUES( $1,$2,$3, $4 )")

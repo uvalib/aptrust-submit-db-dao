@@ -18,6 +18,10 @@ import (
 // GetSubmissionByIdentifier -- get the specified submission
 func (dao *Dao) GetSubmissionByIdentifier(sid string) (*Submission, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetSubmissionByIdentifier")
+	defer funcExit()
+
 	rows, err := dao.Query("SELECT id, identifier, client, storage, collection_name, created_at FROM submissions WHERE identifier = $1 LIMIT 1", sid)
 	if err != nil {
 		return nil, err
@@ -34,6 +38,10 @@ func (dao *Dao) GetSubmissionByIdentifier(sid string) (*Submission, error) {
 
 // GetClientByIdentifier -- get the client details for the specified identifier
 func (dao *Dao) GetClientByIdentifier(cid string) (*Client, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetClientByIdentifier")
+	defer funcExit()
 
 	rows, err := dao.Query("SELECT id, name, identifier, default_storage, approval_email, created_at FROM clients WHERE identifier = $1 LIMIT 1", cid)
 	if err != nil {
@@ -52,6 +60,10 @@ func (dao *Dao) GetClientByIdentifier(cid string) (*Client, error) {
 // GetBagBySubmissionAndName -- get the bag details for the specified submission and bag name
 func (dao *Dao) GetBagBySubmissionAndName(sid string, name string) (*Bag, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetBagBySubmissionAndName")
+	defer funcExit()
+
 	rows, err := dao.Query("SELECT id, bag_name, submission, etag, created_at FROM bags WHERE submission = $1 AND bag_name = $2 LIMIT 1", sid, name)
 	if err != nil {
 		return nil, err
@@ -68,6 +80,10 @@ func (dao *Dao) GetBagBySubmissionAndName(sid string, name string) (*Bag, error)
 
 // GetBagsByStatus -- get a list of bags in the current state
 func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetBagsByStatus")
+	defer funcExit()
 
 	rows, err := dao.Query("SELECT b.id, b.bag_name, b.submission, b.etag, b.created_at FROM bags b, bag_states s1 WHERE s1.status = $1 AND s1.id = (SELECT max(id) FROM bag_states s2 WHERE s2.submission = b.submission AND s2.bag_name = b.bag_name)", status)
 	if err != nil {
@@ -86,6 +102,10 @@ func (dao *Dao) GetBagsByStatus(status string) ([]Bag, error) {
 // GetBagsByName -- get a list of all bags of the specified name
 func (dao *Dao) GetBagsByName(name string) ([]Bag, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetBagsByName")
+	defer funcExit()
+
 	rows, err := dao.Query("SELECT id, bag_name, submission, etag, created_at FROM bags WHERE bag_name = $1 ORDER BY id", name)
 	if err != nil {
 		return nil, err
@@ -102,6 +122,10 @@ func (dao *Dao) GetBagsByName(name string) ([]Bag, error) {
 
 // GetSubmissionsByStatus -- get a list of submissions in the current state
 func (dao *Dao) GetSubmissionsByStatus(status string) ([]Submission, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetSubmissionsByStatus")
+	defer funcExit()
 
 	rows, err := dao.Query("SELECT s.id, s.identifier, s.client, s.storage, s.collection_name, s.created_at FROM submissions s, submission_states s1 WHERE s1.status = $1 AND s1.id = (SELECT max(id) FROM submission_states s2 WHERE s2.submission = s.identifier)", status)
 	if err != nil {
@@ -120,6 +144,10 @@ func (dao *Dao) GetSubmissionsByStatus(status string) ([]Submission, error) {
 // GetBagsBySubmission -- get a list of bags in the specified submission
 func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetBagsBySubmission")
+	defer funcExit()
+
 	rows, err := dao.Query("SELECT id, bag_name, submission, etag, created_at FROM bags WHERE submission = $1", sid)
 	if err != nil {
 		return nil, err
@@ -136,6 +164,10 @@ func (dao *Dao) GetBagsBySubmission(sid string) ([]Bag, error) {
 
 // GetFilesBySubmission -- get a list of files in the specified submission
 func (dao *Dao) GetFilesBySubmission(sid string) ([]File, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetFilesBySubmission")
+	defer funcExit()
 
 	rows, err := dao.Query("SELECT id, name, bag_name, submission, hash, file_size, created_at FROM files WHERE submission = $1", sid)
 	if err != nil {
@@ -154,6 +186,10 @@ func (dao *Dao) GetFilesBySubmission(sid string) ([]File, error) {
 // GetFilesBySubmissionAndBagName -- get a list of files in the specified submission
 func (dao *Dao) GetFilesBySubmissionAndBagName(sid string, bid string) ([]File, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetFilesBySubmissionAndBagName")
+	defer funcExit()
+
 	rows, err := dao.Query("SELECT id, name, bag_name, submission, hash, file_size, created_at FROM files WHERE submission = $1 and bag_name = $2", sid, bid)
 	if err != nil {
 		return nil, err
@@ -170,6 +206,10 @@ func (dao *Dao) GetFilesBySubmissionAndBagName(sid string, bid string) ([]File, 
 
 // GetAptHashConflictsBySubmission -- get a list of conflicting files in the specified submission
 func (dao *Dao) GetAptHashConflictsBySubmission(sid string) ([]File, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetAptHashConflictsBySubmission")
+	defer funcExit()
 
 	rows, err := dao.Query("SELECT DISTINCT(f.id), f.name, f.bag_name, f.submission, f.hash, f.file_size, f.created_at FROM files f, apt_files a WHERE f.submission = $1 AND f.hash = a.hash", sid)
 	if err != nil {
@@ -188,7 +228,32 @@ func (dao *Dao) GetAptHashConflictsBySubmission(sid string) ([]File, error) {
 // GetAptFilesByHash -- get a list of APT files with the specified hash
 func (dao *Dao) GetAptFilesByHash(hash string) ([]File, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetAptFilesByHash")
+	defer funcExit()
+
 	rows, err := dao.Query("SELECT id, file_name, bag_name, '', hash, file_size, apt_added_at FROM apt_files WHERE hash = $1", hash)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	files, err := fileListQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
+// GetFilesByHash -- get a list of APT files with the specified hash
+func (dao *Dao) GetFilesByHash(hash string) ([]File, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetFilesByHash")
+	defer funcExit()
+
+	rows, err := dao.Query("SELECT id, name, bag_name, submission, hash, file_size, created_at FROM files WHERE hash = $1", hash)
 	if err != nil {
 		return nil, err
 	}
@@ -204,6 +269,10 @@ func (dao *Dao) GetAptFilesByHash(hash string) ([]File, error) {
 
 // GetAptFilesByBag -- get a list of APT files from the specified bag
 func (dao *Dao) GetAptFilesByBag(bag string) ([]File, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetAptFilesByBag")
+	defer funcExit()
 
 	rows, err := dao.Query("SELECT id, file_name, bag_name, '', hash, file_size, apt_added_at FROM apt_files WHERE bag_name = $1", bag)
 	if err != nil {
@@ -222,6 +291,10 @@ func (dao *Dao) GetAptFilesByBag(bag string) ([]File, error) {
 // GetHashAllowList -- get a list of hashes that should be 'ignored'
 func (dao *Dao) GetHashAllowList() ([]HashAllowEntry, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetHashAllowList")
+	defer funcExit()
+
 	rows, err := dao.Query("SELECT hash, comment, created_at FROM hash_allowlist")
 	if err != nil {
 		return nil, err
@@ -238,6 +311,10 @@ func (dao *Dao) GetHashAllowList() ([]HashAllowEntry, error) {
 
 // GetBagAllowList -- get a list of bags that should be 'ignored'
 func (dao *Dao) GetBagAllowList() ([]BagAllowEntry, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetBagAllowList")
+	defer funcExit()
 
 	rows, err := dao.Query("SELECT name, comment, created_at FROM bag_allowlist")
 	if err != nil {
@@ -256,6 +333,10 @@ func (dao *Dao) GetBagAllowList() ([]BagAllowEntry, error) {
 // GetSubmissionStateByIdentifier -- get the submission state of the specified identifier
 func (dao *Dao) GetSubmissionStateByIdentifier(sid string) (*SubmissionState, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetSubmissionStateByIdentifier")
+	defer funcExit()
+
 	rows, err := dao.Query("SELECT submission, status, created_at FROM submission_states WHERE submission = $1 AND id = (SELECT MAX(id) FROM submission_states WHERE submission = $1)", sid)
 	if err != nil {
 		return nil, err
@@ -273,6 +354,10 @@ func (dao *Dao) GetSubmissionStateByIdentifier(sid string) (*SubmissionState, er
 // GetSubmissionStateHistoryByIdentifier -- get the submission state history for the specified identifier
 func (dao *Dao) GetSubmissionStateHistoryByIdentifier(sid string) ([]SubmissionState, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetSubmissionStateHistoryByIdentifier")
+	defer funcExit()
+
 	rows, err := dao.Query("SELECT submission, status, created_at FROM submission_states WHERE submission = $1 ORDER BY id", sid)
 	if err != nil {
 		return nil, err
@@ -289,6 +374,10 @@ func (dao *Dao) GetSubmissionStateHistoryByIdentifier(sid string) ([]SubmissionS
 
 // GetBagStateBySubmissionAndName -- get the bag state for the specified submission/bag name combination
 func (dao *Dao) GetBagStateBySubmissionAndName(sid string, name string) (*BagState, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetBagStateBySubmissionAndName")
+	defer funcExit()
 
 	rows, err := dao.Query("SELECT bag_name, submission, status, created_at FROM bag_states WHERE submission = $1 AND bag_name = $2 AND id = (SELECT MAX(id) FROM bag_states WHERE submission = $1 AND bag_name = $2)", sid, name)
 	if err != nil {
@@ -309,6 +398,10 @@ func (dao *Dao) GetBagStateBySubmissionAndName(sid string, name string) (*BagSta
 // can be submitted in multiple submissions
 func (dao *Dao) GetBagStateByName(name string) (*BagState, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetBagStateByName")
+	defer funcExit()
+
 	rows, err := dao.Query("SELECT bag_name, submission, status, created_at FROM bag_states WHERE bag_name = $1 AND id = (SELECT MAX(id) FROM bag_states WHERE bag_name = $1)", name)
 	if err != nil {
 		return nil, err
@@ -324,6 +417,10 @@ func (dao *Dao) GetBagStateByName(name string) (*BagState, error) {
 }
 
 func (dao *Dao) GetBagStateHistoryByName(name string) ([]BagState, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetBagStateHistoryByName")
+	defer funcExit()
 
 	rows, err := dao.Query("SELECT bag_name, submission, status, created_at FROM bag_states WHERE bag_name = $1 ORDER BY submission, id", name)
 	if err != nil {
@@ -342,6 +439,10 @@ func (dao *Dao) GetBagStateHistoryByName(name string) ([]BagState, error) {
 // GetFailuresBySubmission -- get a list of (validation) failures in the specified submission
 func (dao *Dao) GetFailuresBySubmission(sid string) ([]Failure, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetFailuresBySubmission")
+	defer funcExit()
+
 	rows, err := dao.Query("SELECT id, submission, failure, created_at FROM submission_failures WHERE submission = $1 ORDER BY id", sid)
 	if err != nil {
 		return nil, err
@@ -358,6 +459,10 @@ func (dao *Dao) GetFailuresBySubmission(sid string) ([]Failure, error) {
 
 // GetConflictsBySubmission -- get a list of conflicts in the specified submission
 func (dao *Dao) GetConflictsBySubmission(sid string) ([]Conflict, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetConflictsBySubmission")
+	defer funcExit()
 
 	rows, err := dao.Query("SELECT c.submission, f.bag_name, f.name, f.hash, a.bag_name, a.file_name, c.ignored, c.created_at FROM submission_conflicts c, files f, apt_files a WHERE c.submission = $1 AND f.id = c.new_file AND a.id = c.conflicting_file ORDER BY c.id", sid)
 	if err != nil {

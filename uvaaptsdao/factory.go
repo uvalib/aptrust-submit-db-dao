@@ -21,6 +21,10 @@ type Dao struct {
 
 func NewDao(host string, port int, user string, password string, dbname string) (*Dao, error) {
 
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.NewDao")
+	defer funcExit()
+
 	// connection attributes
 	connectionStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
 		host, port, user, password, dbname)
