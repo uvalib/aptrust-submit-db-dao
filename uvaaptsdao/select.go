@@ -246,6 +246,27 @@ func (dao *Dao) GetAptFilesByHash(hash string) ([]File, error) {
 	return files, nil
 }
 
+// GetHashConflictsBySubmission -- get a list of conflicting files in the specified submission
+func (dao *Dao) GetHashConflictsBySubmission(sid string) ([]File, error) {
+
+	// log function entry and exit
+	funcExit := funcEntry("uvaaptsdao.GetHashConflictsBySubmission")
+	defer funcExit()
+
+	rows, err := dao.Query("SELECT DISTINCT(f.id), f.name, f.bag_name, f.submission, f.hash, f.file_size, f.created_at FROM files f WHERE f.submission != $1 AND f.hash IN (SELECT DISTINCT(hash) FROM files WHERE submission = $1)", sid)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	files, err := fileListQueryResults(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
 // GetFilesByHash -- get a list of APT files with the specified hash
 func (dao *Dao) GetFilesByHash(hash string) ([]File, error) {
 
