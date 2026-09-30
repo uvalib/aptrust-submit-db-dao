@@ -7,6 +7,9 @@ package uvaaptsdao
 import (
 	"database/sql"
 	"fmt"
+	"net"
+	"net/url"
+	"strconv"
 
 	//"log"
 
@@ -25,9 +28,15 @@ func NewDao(host string, port int, user string, password string, dbname string) 
 	funcExit := funcEntry("uvaaptsdao.NewDao")
 	defer funcExit()
 
-	// connection attributes
-	connectionStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s",
-		host, port, user, password, dbname)
+	// connection attributes, built as a URL so credentials containing
+	// spaces, quotes or other special characters are escaped correctly
+	connectionUrl := url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(user, password),
+		Host:   net.JoinHostPort(host, strconv.Itoa(port)),
+		Path:   "/" + dbname,
+	}
+	connectionStr := connectionUrl.String()
 
 	// connect and ensure success
 	db, err := sql.Open("postgres", connectionStr)
