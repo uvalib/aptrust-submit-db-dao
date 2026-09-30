@@ -42,7 +42,7 @@ func (dao *Dao) UpdateSubmissionStorage(sid string, storage string) error {
 		return err
 	}
 	defer stmt.Close()
-	return execPrepared(stmt, storage, sid)
+	return execPreparedUpdate(stmt, ErrSubmissionNotFound, storage, sid)
 }
 
 func (dao *Dao) UpdateBagState(bagName string, sid string, state string) error {
@@ -73,7 +73,7 @@ func (dao *Dao) UpdateBagETag(bagName string, sid string, etag string) error {
 		return err
 	}
 	defer stmt.Close()
-	return execPrepared(stmt, etag, bagName, sid)
+	return execPreparedUpdate(stmt, ErrBagNotFound, etag, bagName, sid)
 }
 
 //

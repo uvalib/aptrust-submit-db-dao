@@ -387,6 +387,26 @@ func execPrepared(stmt *sql.Stmt, values ...any) error {
 	return err
 }
 
+// execPreparedUpdate -- execute an update, returning notFound if no rows were affected
+func execPreparedUpdate(stmt *sql.Stmt, notFound error, values ...any) error {
+	res, err := stmt.Exec(values...)
+	if err != nil {
+		return err
+	}
+
+	count, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	// check for not found
+	if count == 0 {
+		return fmt.Errorf("%q: %w", "object(s) not found", notFound)
+	}
+
+	return nil
+}
+
 func funcEntry(fname string) func() {
 	fmt.Printf("DEBUG:   fn: %s\n", fname)
 
