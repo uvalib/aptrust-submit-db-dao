@@ -73,7 +73,7 @@ type File struct {
 	Submission string    `json:"submission"` // owning submission
 	BagName    string    `json:"bag"`        // owning bag name
 	Hash       string    `json:"hash"`       // file hash
-	Size       int32     `json:"size"`       // file size
+	Size       int64     `json:"size"`       // file size
 	Created    time.Time `json:"created"`    // created time
 }
 
