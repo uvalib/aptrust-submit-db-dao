@@ -16,6 +16,8 @@ var ErrBagNotFound = fmt.Errorf("bag not found")
 var ErrFileNotFound = fmt.Errorf("file not found")
 var ErrConflictNotFound = fmt.Errorf("conflict not found")
 var ErrFailureNotFound = fmt.Errorf("failure not found")
+var ErrHashAllowEntryNotFound = fmt.Errorf("hash allow entry not found")
+var ErrBagAllowEntryNotFound = fmt.Errorf("bag allow entry not found")
 
 // submission status definitions
 var SubmissionStatusRegistered = "registered"

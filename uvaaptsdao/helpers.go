@@ -192,7 +192,7 @@ func hashAllowListQueryResults(rows *sql.Rows) ([]HashAllowEntry, error) {
 
 	// check for not found
 	if count == 0 {
-		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrFileNotFound)
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrHashAllowEntryNotFound)
 	}
 
 	//fmt.Printf("found %d object(s)\n", count)
@@ -219,7 +219,7 @@ func bagAllowListQueryResults(rows *sql.Rows) ([]BagAllowEntry, error) {
 
 	// check for not found
 	if count == 0 {
-		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrBagNotFound)
+		return nil, fmt.Errorf("%q: %w", "object(s) not found", ErrBagAllowEntryNotFound)
 	}
 
 	//fmt.Printf("found %d object(s)\n", count)
