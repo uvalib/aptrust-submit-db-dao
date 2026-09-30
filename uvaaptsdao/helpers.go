@@ -99,7 +99,7 @@ func bagQueryResults(rows *sql.Rows) (*Bag, error) {
 	count := 0
 
 	for rows.Next() {
-		err := rows.Scan(&results.Name, &results.Submission, &results.ETag, &results.Created)
+		err := rows.Scan(&results.Id, &results.Name, &results.Submission, &results.ETag, &results.Created)
 		if err != nil {
 			return nil, err
 		}
