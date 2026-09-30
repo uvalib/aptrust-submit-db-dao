@@ -361,7 +361,7 @@ func conflictListQueryResults(rows *sql.Rows) ([]Conflict, error) {
 
 	for rows.Next() {
 		result := Conflict{}
-		err := rows.Scan(&result.Submission, &result.BagName, &result.FileName, &result.Hash, &result.ConflictBagName, &result.ConflictFileName, &result.Ignored, &result.Created)
+		err := rows.Scan(&result.Id, &result.Submission, &result.BagName, &result.FileName, &result.Hash, &result.ConflictBagName, &result.ConflictFileName, &result.Ignored, &result.Created)
 		if err != nil {
 			return nil, err
 		}

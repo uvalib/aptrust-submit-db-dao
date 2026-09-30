@@ -485,7 +485,7 @@ func (dao *Dao) GetConflictsBySubmission(sid string) ([]Conflict, error) {
 	funcExit := funcEntry("uvaaptsdao.GetConflictsBySubmission")
 	defer funcExit()
 
-	rows, err := dao.Query("SELECT c.submission, f.bag_name, f.name, f.hash, a.bag_name, a.file_name, c.ignored, c.created_at FROM submission_conflicts c, files f, apt_files a WHERE c.submission = $1 AND f.id = c.new_file AND a.id = c.conflicting_file ORDER BY c.id", sid)
+	rows, err := dao.Query("SELECT c.id, c.submission, f.bag_name, f.name, f.hash, a.bag_name, a.file_name, c.ignored, c.created_at FROM submission_conflicts c, files f, apt_files a WHERE c.submission = $1 AND f.id = c.new_file AND a.id = c.conflicting_file ORDER BY c.id", sid)
 	if err != nil {
 		return nil, err
 	}
