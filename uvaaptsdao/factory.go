@@ -39,6 +39,8 @@ func NewDao(host string, port int, user string, password string, dbname string) 
 	// try a ping before declaring victory
 	if err = db.Ping(); err != nil {
 		fmt.Printf("ERROR: unable to ping database (%s)\n", err.Error())
+		// release the connection pool, we are not returning it
+		db.Close()
 		return nil, err
 	}
 
